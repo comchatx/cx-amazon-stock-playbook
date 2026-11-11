@@ -1,23 +1,13 @@
-REPLACE: what cx gets done with the plugin, then the data and how far it reaches. WRITING-A-PACKAGE.md, "Shipping it", gives this README's order, and the copy page it names gives its words.
+cx reads your stock in Amazon's warehouses: where each product is, what shoppers can buy now, what it costs to hold, what is stuck and when to restock. It cannot read AWD, and changes nothing at Amazon unless you ask.
 
 Some things you can ask:
 
-- REPLACE
-- REPLACE
-- REPLACE
+- Which products will run out before the stock on its way is received?
+- Why did my storage charge go up last month?
+- How many units of last week's delivery were received short?
 
-## Connecting your store
+To see what each product earns after fees, also install cx-amazon-finance-playbook.
 
-REPLACE
+## What it uses
 
-## When jobs run
-
-REPLACE
-
-## What it costs
-
-REPLACE
-
-## What it needs
-
-REPLACE
+- **Amazon SP-API:** your Amazon selling account, connected on the Amazon SP-API plugin. cx reads your inventory, reports and shipments there.

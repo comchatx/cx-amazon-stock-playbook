@@ -1,0 +1,40 @@
+{
+  "skill_name": "restock",
+  "evals": [
+    {
+      "id": 41,
+      "name": "two-recommendations",
+      "prompt": "Restock Inventory report says send 420 black kettles (KW-KETTLE-BLK) by Nov 20. The FBA inventory (planning) report says ship in 260 by Nov 14. Which one is right, and how many should I order? My supplier lead time is 25 days production plus about 35 days sea.",
+      "expected_output": "Both are Amazon's: the Restock report (GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT: Recommended replenishment qty 420, Recommended ship date 2026-11-20, Total Days of Supply 62 including the 300 units in transit, 29 days at the fulfilment network, Alert low_stock) and the planning report (GET_FBA_INVENTORY_PLANNING_DATA: Recommended ship-in quantity 260, date 2026-11-14). Amazon publishes neither formula, calls its recommendation a guide only, and sellers report the two disagree (R3, R4). The Restock settings that shape them (lead time, minimum order, replenishment frequency, case pack) are keyed in Seller Central and not readable through SP-API (R5). Total Days of Supply includes units from open shipments (W7, R1). 150 units shipped in the last 30 days (planning units-shipped-t30), counted as shipped units (R16). With a 60-day supply lead time neither ship date is reachable from new production. The seller's own figure follows the tools' shape, (lead time + target days) x daily sales - stock on hand and inbound, each term a choice (R18). The 2026 Black Friday arrival dates (10-21 minimal splits, 10-28 Amazon-optimized) have passed (I24).",
+      "files": [],
+      "expectations": [
+        "The answer reads both reports for KW-KETTLE-BLK and states both recommendations: the Restock report's 420 by 2026-11-20 and the planning report's 260 ship-in by 2026-11-14.",
+        "The answer says Amazon publishes the formula for neither recommendation and does not declare one of them correct; it may say sellers report the two disagree and that Amazon calls its recommendation a guide, not a substitute for the seller's judgement.",
+        "The answer says the Restock report's Total Days of Supply (62) counts units in open shipments (the 300 in transit), while days of supply at Amazon's fulfilment network is 29.",
+        "The answer says the Restock settings Amazon uses (lead time, minimum order quantity, replenishment frequency, case pack) are set in Seller Central and cannot be read through the API, so it cannot check what lead time Amazon assumed.",
+        "The answer sets the seller's 60-day supply lead time (25 production + 35 sea, notes/catalog.md) against both ship dates and says new production cannot meet either date.",
+        "If the answer computes an order quantity, it states each input (daily sales and its window, lead time, target or safety days, stock on hand and inbound) as a choice the seller makes, and shows the arithmetic; it does not present the result as Amazon's or as the one right number.",
+        "The answer counts the black kettle's recent sales in shipped units (150 in 30 days, about 5 a day, from the planning or Restock report) or says which count (ordered or shipped) it uses.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    },
+    {
+      "id": 42,
+      "name": "low-inventory-fee",
+      "prompt": "My pour-over dripper (KW-POUROVER) got hit with the low-inventory-level fee this week even though 500 units are on the water. Why? How many days of cover do I need to keep so it doesn't happen again — and does the rule change in February?",
+      "expected_output": "The planning report (GET_FBA_INVENTORY_PLANNING_DATA) row for KW-POUROVER reads Low-Inventory-Level fee applied in current week? Y, Exempted? N, short-term historical days of supply 16 and long-term 23 (historical-days-of-supply 23, last updated 2026-11-08). Through 2027-01-31 the US fee applies when both the 30-day and the 90-day historical days of supply are under 28 (C12); historical days of supply excludes inbound, so the 500 units shipped (FBA19KWPOV1, SHIPPED) do not lift it (C13). From 2027-02-01 the fee applies only when inventory on the assessment date is under 28 days of supply on actual shipments in both the 28 days before and the 28 days after, charged about four weeks in arrears (C14); Amazon's notice suggests keeping four weeks of inventory, a suggestion beside the fee's boundary, not a holding rule (C42). The per-unit amount has no report column; it arrives in Finances (C11). How much cover to hold is the seller's choice.",
+      "files": [],
+      "expectations": [
+        "The answer reads the planning report row for KW-POUROVER and gives its fee fields: fee applied in the current week Y, not exempt, short-term historical days of supply 16 and long-term 23.",
+        "The answer says the US fee through 2027-01-31 applies when both the short-term (30-day) and long-term (90-day) historical days of supply are below 28 days, and that both are below 28 here.",
+        "The answer says inbound units do not count toward the fee's inventory, so the 500 units on the water did not help.",
+        "The answer says that from 2027-02-01 the US test is two-sided: inventory on the assessment date against actual shipments in the 28 days before and in the 28 days after, both under 28 days, with the fee charged only after the second computation (about four weeks in arrears).",
+        "The answer gives no per-unit fee amount for the pour-over as read or as Amazon's current rate; it says the amount is not in any report column (it arrives in Finances) or cites a dated Amazon page for any figure it gives.",
+        "The answer treats 28 days as the fee's boundary, not a rule for how much stock to hold; any cover target it suggests is labelled the seller's choice (Amazon's four-weeks suggestion may be cited as Amazon's suggestion).",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    }
+  ]
+}

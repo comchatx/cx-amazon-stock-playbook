@@ -1,0 +1,40 @@
+{
+  "skill_name": "stuck-stock",
+  "evals": [
+    {
+      "id": 61,
+      "name": "stranded-vs-unfulfillable",
+      "prompt": "Seller Central says I have 'unsellable' tea caddies (KW-CADDY-TIN) and mugs (KW-MUG-SET4). Are these the same problem? What will Amazon do with them on its own if I do nothing?",
+      "expected_output": "Two different states. The caddies are stranded: in fulfilment centres with no active offer. getInventorySummaries counts them as 86 fulfillable and has no stranded field; GET_STRANDED_INVENTORY_UI_DATA gives stranded-reason Listing suppressed, date-stranded 2026-10-05 and Date-to-take-auto-removal 2026-12-04 (S1, S2, S3); getListingsItem for KW-CADDY-TIN shows issue 90220, missing item_package_weight, enforcement LISTING_SUPPRESSED (S8). A fix can take 48 hours to show (S5); stranded stock keeps paying storage (C2); not fixed, it is removed or disposed of on that date under the seller's settings (S3). The mugs are unfulfillable: 19 = 14 customer damaged, 3 warehouse damaged, 2 defective (W16). Customer damaged is not reimbursed and stays unfulfillable until removed (S13); in the US, unfulfillable stock with no return option set is disposed of at Amazon's discretion (S14). The automated settings cannot be read or changed through the API (S15); notes/channels.md says they were never opened.",
+      "files": [],
+      "expectations": [
+        "The answer says the caddies and the mugs are different states: the caddies are stranded (sellable units with no active offer) and the mugs are unfulfillable (damaged or defective units).",
+        "The answer reads the stranded report and gives, for KW-CADDY-TIN, 86 units stranded since 2026-10-05 with an auto-removal date of 2026-12-04, and the reason (listing suppressed).",
+        "The answer says why the listing is suppressed, from the Listings Items issues (item_package_weight missing, enforcement LISTING_SUPPRESSED) or the stranded report's error message, and that fixing the listing is the way back to sale.",
+        "The answer notes that getInventorySummaries shows the 86 caddies as fulfillable and has no stranded field, so stranding is read from the stranded report.",
+        "The answer gives the mugs' 19 unfulfillable units by disposition: 14 customer damaged, 3 warehouse damaged, 2 defective.",
+        "The answer says customer-damaged units are not reimbursed, and that in the US unfulfillable stock with no return option set can be disposed of at Amazon's discretion.",
+        "The answer says the automated removal settings cannot be read through the API, so it cannot tell the seller which disposition Amazon will apply, and it does not invent one.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    },
+    {
+      "id": 62,
+      "name": "aged-ways-out",
+      "prompt": "I have about 1,060 tea infusers (KW-INFUSER-2PK) at Amazon selling ~4 a day. Should I remove them, liquidate, or run a discount before the aged fees hit? Just tell me what saves the most.",
+      "expected_output": "The planning report (Inventory age snapshot date 2026-11-08) puts 420 units at 181-270 days and 60 at 271-365, estimated excess 700, recommended removal 480, and estimated aged surcharge at the next assessment of 118.98 USD across its estimated-ais columns (25.20, 34.56, 31.32, 27.90). The US aged surcharge is assessed on the 15th; a removal or disposal order submitted by 11:59 PM Pacific on 2026-11-14 takes those units out of that month's charge (C6). October's charge (long-term storage fee report, 2026-10-15) was 28.62 USD on 380 units. Removal fees are per unit as processed, read from the removal order detail report: 206.00 USD for 200 units in August, about 1.03 a unit (C31). Liquidation: Amazon states gross recovery typically 5-10% of value, less 15% and a per-item fee, and the order cannot be cancelled (S19); a removal can be cancelled only while in Planning (S17). For stock past 270 days Amazon's texts disagree: a fee schedule prices bands to 456+ days, a moderator says such stock is removed even with the setting disabled (S12, S11). At about 4 a day (120 in 30 days) the stock covers about 260 days. The choice and the price (planning recommended-sales-price 9.99) are the seller's; the purchase cost is sunk (S28).",
+      "files": [],
+      "expectations": [
+        "The answer reads the planning report row for KW-INFUSER-2PK and gives its age split (420 units at 181-270 days, 60 at 271-365) and its estimated aged surcharge for the next assessment (about 119 USD in all, from the estimated-ais columns).",
+        "The answer says the US aged surcharge is assessed on the 15th of the month and that a removal or disposal order submitted by 11:59 PM Pacific on the 14th (here 2026-11-14) takes those units out of that month's surcharge.",
+        "The answer takes the removal cost from the seller's own removal order detail report (206.00 USD for 200 units in August, about 1.03 a unit) or says the per-unit fee is read there, and does not quote a removal fee per unit from memory.",
+        "The answer states liquidation's terms as Amazon gives them (gross recovery typically 5-10% of value, less a 15% referral and a per-item processing fee; the order cannot be cancelled) and does not promise a recovery amount.",
+        "The answer names that Amazon's US texts disagree about sellable stock past 270 days (aged-surcharge bands beyond 270 days against a moderator's statement that such stock is removed), relevant to the 60 units in 271-365.",
+        "The answer compares the options with the seller's figures (the surcharge the planning report estimates, the removal fee read, about 4 units a day of sales), says which choice is permanent or cancellable, and leaves the decision to the seller rather than stating one option saves the most without showing the figures.",
+        "No removal, liquidation or price change is sent: cx-calls.log holds no feed or listing write, or any appears refused and the answer says so.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails."
+      ]
+    }
+  ]
+}

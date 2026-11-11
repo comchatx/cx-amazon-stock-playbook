@@ -1,0 +1,598 @@
+#!/usr/bin/env bash
+# The skill-creator runs' stand-in for the box's cx, for the stock playbook. It never touches the network.
+#   cx raw amazon-sp-api --origin O --method M --path P [--header K=V]... [--query k=v]... [--body FILE|@FILE|B] [--output F] [--json]
+# Reads are answered from $TENANT_TREE/../stub-replies/ first (beside the tree, out of the run's sight), then from the tree's
+# landed replies under $TENANT_TREE/raw/amazon-sp-api/. Every change is refused (out_of_scope, exit 2): any PUT, PATCH or
+# DELETE, and any POST that is not a report request, a fee estimate or a Multi-Channel Fulfillment preview. The application
+# holds five roles (Product Listing, Pricing, Brand Analytics, Finance and Accounting, Amazon Fulfillment): a call that needs
+# another (AWD, Supply Sources, External Fulfillment, the Economics dataset, ...) is answered 403 Unauthorized, as Amazon
+# would. A report requested with POST /reports/2021-06-30/reports is DONE at once; its document's url is a file:// path under
+# stub-replies/report-files/, tab-separated, gzipped where Amazon's reply would name GZIP. Each call is appended to
+# $TENANT_TREE/../cx-calls.log. Works on bash 3.2 (macOS) and bash 5; JSON goes through python3 -I.
+set -u
+T="${TENANT_TREE:?TENANT_TREE is the seller tree}"
+ROOT="$(cd "$T/.." && pwd)"
+S="$ROOT/stub-replies"
+echo "cx $*" >>"$ROOT/cx-calls.log"
+
+refuse() {
+  python3 -I -c 'import json,sys; print(json.dumps({"request_id": "stub", "paths": [], "cost": [], "refusal": {"reason": sys.argv[1], "detail": sys.argv[2]}}))' "$1" "$2"
+  exit 2
+}
+lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
+
+[ "${1-}" = raw ] || { echo "stub cx: this run has only 'cx raw amazon-sp-api ...'" >&2; exit 2; }
+[ $# -ge 2 ] || { echo "stub cx: cx raw <source> --origin O --method M --path P ..." >&2; exit 2; }
+src="$2"; shift 2
+[ "$src" = amazon-sp-api ] || refuse out_of_scope "stub: this run has only amazon-sp-api"
+method=GET path='' origin='' output='' json=0 body='' has_body=0 query=''
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --origin) origin="${2-}"; shift 2 ;;
+    --method) method="$(printf '%s' "${2-}" | tr '[:lower:]' '[:upper:]')"; shift 2 ;;
+    --path) path="${2-}"; shift 2 ;;
+    --query) query="$query
+${2-}"; shift 2 ;;
+    --body) body="${2-}"; has_body=1; shift 2 ;;
+    --output) output="${2-}"; shift 2 ;;
+    --json) json=1; shift ;;
+    --header)
+      h="${2-}"; shift 2
+      case "$h" in *=*) k="${h%%=*}" ;; *:*) k="${h%%:*}" ;; *) k="$h" ;; esac
+      case "$(lower "$k")" in
+        x-amz-access-token|authorization) refuse out_of_scope "the door attaches the seller's token; a request naming $k is refused" ;;
+      esac ;;
+    *) echo "stub cx: unknown flag $1" >&2; exit 2 ;;
+  esac
+done
+[ -n "$path" ] || { echo "stub cx: --path is required" >&2; exit 2; }
+case "$path" in /*) ;; *) path="/$path" ;; esac
+case "$origin" in
+  https://sellingpartnerapi-na.amazon.com|https://sellingpartnerapi-eu.amazon.com|https://sellingpartnerapi-fe.amazon.com) ;;
+  https://sandbox.sellingpartnerapi-*) refuse out_of_scope "stub: this run has no sandbox replies" ;;
+  '') refuse out_of_scope "amazon-sp-api needs --origin, one of the sellingpartnerapi hosts" ;;
+  *) refuse out_of_scope "stub: $origin is not a Selling Partner API origin" ;;
+esac
+case "$(lower "${path#/}")" in tokens|tokens/*) refuse out_of_scope "the Tokens API is the door's own" ;; esac
+
+case "$method" in
+  GET|HEAD) [ $has_body -eq 0 ] || refuse out_of_scope "a $method with a body is not sent" ;;
+  POST)
+    case "$path" in
+      /reports/2021-06-30/reports|/products/fees/v0/items/*/feesEstimate|/products/fees/v0/listings/*/feesEstimate|\
+      /fba/outbound/2020-07-01/fulfillmentOrders/preview|/fulfillment/outbound/2026-07-04/previews|/dataKiosk/2023-11-15/queries) ;;
+      /awd/*) ;;
+      *) refuse out_of_scope "stub: this run sends no change to Amazon; POST $path is not a read this stand-in answers" ;;
+    esac ;;
+  PUT|PATCH|DELETE) refuse out_of_scope "stub: this run sends no change to Amazon ($method $path)" ;;
+  *) refuse out_of_scope "$method is not sent" ;;
+esac
+
+STATE="$S/.state"
+mkdir -p "$STATE"
+bodyfile="$STATE/body-$$.json"
+: >"$bodyfile"
+if [ $has_body -eq 1 ]; then
+  case "$body" in
+    @*) f="${body#@}"; [ -f "$f" ] || refuse out_of_scope "no such body file: $f"; cat "$f" >"$bodyfile" ;;
+    *) if [ -f "$body" ]; then cat "$body" >"$bodyfile"; else printf '%s' "$body" >"$bodyfile"; fi ;;
+  esac
+fi
+qfile="$STATE/query-$$.txt"
+printf '%s\n' "$query" >"$qfile"
+
+name="$(printf '%s' "${path%%\?*}" | tr '/' '-' | sed 's/^-//' | cut -c1-80)"
+if [ -z "$output" ]; then
+  mkdir -p "$T/raw/$src"
+  output="$T/raw/$src/stub-$(date +%Y%m%dT%H%M%S)-$$-${RANDOM}-${name}.json"
+fi
+[ ! -e "$output" ] || { rm -f "$bodyfile" "$qfile"; refuse out_of_scope "the file is already there"; }
+[ -d "$(dirname "$output")" ] || { rm -f "$bodyfile" "$qfile"; refuse out_of_scope "no such directory"; }
+
+PY='
+import datetime as dt, glob, gzip, hashlib, json, os, re, sys
+from urllib.parse import unquote
+
+method, path, origin, qfile, bodyfile, out, S, T = sys.argv[1:9]
+STATE = os.path.join(S, ".state")
+R = os.path.join(T, "raw", "amazon-sp-api")
+SELLER = "A1FIXTURESELLER"
+REGION = {"https://sellingpartnerapi-na.amazon.com": "na", "https://sellingpartnerapi-eu.amazon.com": "eu",
+          "https://sellingpartnerapi-fe.amazon.com": "fe"}[origin]
+MKT_REGION = {"ATVPDKIKX0DER": "na", "A2EUQ1WTGCTBG2": "na", "A1AM78C64UM0Y8": "na", "A2Q3Y263D00KWC": "na",
+              "A1PA6795UKMFR9": "eu", "A13V1IB3VIYZZH": "eu", "APJ6JRA9NG5V4": "eu", "A1RKKUPIHCS9HS": "eu",
+              "A1805IZSGTT6HS": "eu", "A1F83G8C2ARO7P": "eu", "AMEN7PMS3EDWL": "eu", "A2NODRKZP88ZB9": "eu",
+              "A1C3SOZRARQ6R3": "eu", "A1VC38T7YXB528": "fe", "A39IBJ37TRP1C6": "fe"}
+SELLER_MKTS = {"ATVPDKIKX0DER", "A1PA6795UKMFR9", "A13V1IB3VIYZZH", "APJ6JRA9NG5V4", "A1RKKUPIHCS9HS", "A1805IZSGTT6HS"}
+raw = open(bodyfile).read()
+Q = {}
+for line in open(qfile).read().splitlines():
+    if "=" in line:
+        k, v = line.split("=", 1)
+        Q.setdefault(k, []).append(unquote(v))
+path_only, _, inline = path.partition("?")
+for part in filter(None, inline.split("&")):
+    k, _, v = part.partition("=")
+    Q.setdefault(unquote(k), []).append(unquote(v))
+path = path_only
+
+
+def q(k, default=None):
+    v = Q.get(k)
+    return v[-1] if v else default
+
+
+def qlist(k):
+    out = []
+    for v in Q.get(k, []):
+        out += [x for x in v.split(",") if x]
+    return out
+
+
+def reply(status, doc):
+    with open(out, "w") as f:
+        if isinstance(doc, str):
+            f.write(doc)
+        else:
+            json.dump(doc, f, indent=2, ensure_ascii=False)
+    print(status)
+    sys.exit(0)
+
+
+def err(status, code, message, details=""):
+    reply(status, {"errors": [{"code": code, "message": message, "details": details}]})
+
+
+def unauthorized():
+    err(403, "Unauthorized", "Access to requested resource is denied.", "")
+
+
+def latest(name):
+    for base in (S, R):
+        hits = sorted(glob.glob(os.path.join(base, name)))
+        if hits:
+            return json.load(open(hits[-1]))
+    return None
+
+
+def body():
+    if not raw.strip():
+        return {}
+    try:
+        return json.loads(raw)
+    except ValueError:
+        err(400, "InvalidInput", "The request body is not valid JSON.")
+
+
+def mkt_ok(m):
+    if m not in MKT_REGION:
+        err(400, "InvalidInput", "Invalid Marketplace ID: %s" % m)
+    if MKT_REGION[m] != REGION:
+        err(400, "InvalidInput", "Marketplace %s is not served by this endpoint." % m)
+    if m not in SELLER_MKTS:
+        unauthorized()
+
+
+# roles outside the five: answered as Amazon answers a role the application lacks
+if re.match(r"/(awd|supplySources|externalFulfillment|easyShip|vendor|shipping/v2|mfn|messaging|solicitations|invoices)(/|$)", path):
+    unauthorized()
+if path == "/dataKiosk/2023-11-15/queries" and method == "POST":
+    if "economics" in raw:
+        unauthorized()
+    err(400, "InvalidInput", "stub: this run answers no Data Kiosk query")
+if method == "POST" and path.startswith("/awd/"):
+    unauthorized()
+
+# ---- FBA inventory
+if path == "/fba/inventory/v1/summaries":
+    if q("granularityType") != "Marketplace" or not q("granularityId") or not q("marketplaceIds"):
+        err(400, "InvalidInput", "granularityType (Marketplace), granularityId and marketplaceIds are required.")
+    m = q("marketplaceIds")
+    mkt_ok(m)
+    if q("granularityId") != m:
+        err(400, "InvalidInput", "granularityId must be the marketplace in marketplaceIds.")
+    doc = latest("getInventorySummaries-%s.json" % m)
+    if doc is None:
+        err(404, "NotFound", "stub: no inventory for this marketplace")
+    skus = qlist("sellerSkus") or ([q("sellerSku")] if q("sellerSku") else [])
+    if len(skus) > 50:
+        err(400, "InvalidInput", "sellerSkus takes at most 50 SKUs.")
+    rows = doc["payload"]["inventorySummaries"]
+    if skus and not q("startDateTime"):
+        rows = [r for r in rows if r["sellerSku"] in skus]
+    if (q("details") or "false").lower() != "true":
+        rows = [{k: v for k, v in r.items() if k != "inventoryDetails"} for r in rows]
+    doc["payload"]["inventorySummaries"] = rows
+    reply(200, doc)
+
+if path.startswith("/fba/inventory/v1/items"):
+    err(403, "Unauthorized", "Access to requested resource is denied.", "The sandbox-only inventory items operations are not served in production.")
+
+# ---- Sellers
+if path == "/sellers/v1/marketplaceParticipations":
+    reply(200, latest("getMarketplaceParticipations-%s.json" % REGION) or {"payload": []})
+
+# ---- Reports
+if path == "/reports/2021-06-30/reports" and method == "POST":
+    b = body()
+    rtype, mkts = b.get("reportType"), b.get("marketplaceIds") or []
+    if not rtype or not mkts:
+        err(400, "InvalidInput", "reportType and marketplaceIds are required.")
+    for m in mkts:
+        mkt_ok(m)
+    if rtype in ("GET_V2_SELLER_PERFORMANCE_REPORT", "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "GET_OUT_OF_STOCK_MFN_INFORMATION",
+                 "GET_FLAT_FILE_PENDING_ORDERS_DATA", "GET_PENDING_ORDERS_DATA"):
+        unauthorized()
+    if rtype in ("GET_FBA_SNS_FORECAST_DATA", "GET_FBA_SNS_PERFORMANCE_DATA", "GET_FBA_UNO_INVENTORY_DATA", "GET_EXCESS_INVENTORY_DATA",
+                 "GET_FBA_FULFILLMENT_INVENTORY_HEALTH_DATA", "GET_FBA_INVENTORY_AGED_DATA", "GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA",
+                 "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA", "GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA",
+                 "GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA", "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA", "GET_FBA_RECONCILIATION_REPORT_DATA"):
+        err(400, "InvalidInput", "Report type %s is not supported." % rtype)
+    if rtype == "GET_AFN_INVENTORY_DATA_BY_COUNTRY" and REGION != "eu":
+        err(400, "InvalidInput", "Report type %s is not available in this marketplace." % rtype)
+    if rtype.startswith("GET_V2_SETTLEMENT"):
+        err(400, "InvalidInput", "Settlement reports cannot be requested; Amazon schedules them.")
+    os.makedirs(os.path.join(STATE, "reports"), exist_ok=True)
+    os.makedirs(os.path.join(S, "report-files"), exist_ok=True)
+    n = len(os.listdir(os.path.join(STATE, "reports"))) + 1
+    rid = str(53000000000 + n * 7919)
+    stamp = "2026-11-10T17:%02d:%02d+00:00" % ((5 + n) % 60, (13 * n) % 60)
+    m = mkts[0]
+    srcf = os.path.join(S, "report-sources", "%s-%s.json" % (rtype, m))
+    rep = {"reportType": rtype, "processingEndTime": stamp, "processingStatus": "DONE", "marketplaceIds": mkts, "reportId": rid,
+           "dataStartTime": b.get("dataStartTime") or stamp, "dataEndTime": b.get("dataEndTime") or stamp, "createdTime": stamp,
+           "processingStartTime": stamp}
+    if not os.path.exists(srcf):
+        rep["processingStatus"] = "CANCELLED"
+        rep.pop("processingEndTime")
+    else:
+        src = json.load(open(srcf))
+        rows, head, opts = src["rows"], src["header"], b.get("reportOptions") or {}
+        start = (b.get("dataStartTime") or "")[:10]
+        end = (b.get("dataEndTime") or "")[:10]
+        if src["kind"] in ("range", "ledger-summary", "ledger-detail") and src["date"]:
+            dc = src["date"]
+            if start:
+                rows = [r for r in rows if str(r[dc])[: len(start) if dc != "month_of_charge" else 7] >= (start if dc != "month_of_charge" else start[:7])]
+            if end:
+                rows = [r for r in rows if str(r[dc])[: len(end) if dc != "month_of_charge" else 7] <= (end if dc != "month_of_charge" else end[:7])]
+        if src["kind"] == "ledger-detail":
+            if not start:
+                err(400, "InvalidInput", "dataStartTime is required for this report type.")
+            ev = opts.get("eventType")
+            if ev:
+                rows = [r for r in rows if r["Event Type"] == ev]
+            for k in ("FNSKU", "MSKU", "ASIN"):
+                if opts.get(k):
+                    rows = [r for r in rows if r[k] == opts[k]]
+            rows = [dict(r, Date=dt.date.fromisoformat(r["Date"]).strftime("%m/%d/%Y")) for r in rows]
+        if src["kind"] == "ledger-summary":
+            if not start or not end:
+                err(400, "InvalidInput", "dataStartTime and dataEndTime are required for this report type.")
+            period = (opts.get("aggregatedByTimePeriod") or "MONTHLY").upper()
+            s0, e0 = dt.date.fromisoformat(start), dt.date.fromisoformat(end)
+            nextd = e0 + dt.timedelta(1)
+            valid = {"DAILY": True, "WEEKLY": s0.weekday() == 0 and e0.weekday() == 6,
+                     "MONTHLY": s0.day == 1 and nextd.day == 1}.get(period, False)
+            for k in ("FNSKU", "MSKU", "ASIN"):
+                if opts.get(k):
+                    rows = [r for r in rows if r[k] == opts[k]]
+            if not valid:
+                rows = []
+            elif period != "DAILY":
+                def bucket(d):
+                    d = dt.date.fromisoformat(d)
+                    return d.strftime("%m/%Y") if period == "MONTHLY" else (d - dt.timedelta(d.weekday())).strftime("%m/%d/%Y")
+                agg, order = {}, []
+                for r in rows:
+                    key = (bucket(r["Date"]), r["MSKU"], r["Disposition"])
+                    if key not in agg:
+                        agg[key] = dict(r, Date=key[0])
+                        order.append(key)
+                        continue
+                    a = agg[key]
+                    for c in ("Receipts", "Customer Shipments", "Customer Returns", "Vendor Returns", "Warehouse Transfer In/Out", "Found",
+                              "Lost", "Damaged", "Disposed", "Other Events", "Unknown Events"):
+                        a[c] += r[c]
+                    a["Ending Warehouse Balance"], a["In Transit Between Warehouses"] = r["Ending Warehouse Balance"], r["In Transit Between Warehouses"]
+                rows = [agg[k] for k in order]
+            else:
+                rows = [dict(r, Date=dt.date.fromisoformat(r["Date"]).strftime("%m/%d/%Y")) for r in rows]
+        text = "\t".join(head) + "\n" + "".join("\t".join("" if r.get(c) is None else str(r.get(c)) for c in head) + "\n" for r in rows)
+        did = "amzn1.spdoc.1.4.%s.%s" % (REGION, hashlib.sha256((rid + rtype).encode()).hexdigest()[:8] + "-" +
+                                          hashlib.sha256(rid.encode()).hexdigest()[:4] + "-4c1b-9b59-" + hashlib.sha256(raw.encode()).hexdigest()[:12])
+        fn = os.path.join(S, "report-files", did + (".txt.gz" if src["gzip"] else ".txt"))
+        data = (b"\xef\xbb\xbf" if src.get("bom") else b"") + text.encode("utf-8")
+        if src["gzip"]:
+            with gzip.open(fn, "wb") as f:
+                f.write(data)
+        else:
+            open(fn, "wb").write(data)
+        rep["reportDocumentId"] = did
+        doc = {"reportDocumentId": did, "url": "file://" + os.path.abspath(fn)}
+        if src["gzip"]:
+            doc["compressionAlgorithm"] = "GZIP"
+        json.dump(doc, open(os.path.join(STATE, "doc-" + did + ".json"), "w"))
+    json.dump(rep, open(os.path.join(STATE, "reports", rid + ".json"), "w"))
+    reply(202, {"reportId": rid})
+
+m = re.fullmatch(r"/reports/2021-06-30/reports/([^/]+)", path)
+if m and method in ("GET", "HEAD"):
+    f = os.path.join(STATE, "reports", m.group(1) + ".json")
+    if not os.path.exists(f):
+        err(404, "NotFound", "Report not found: %s" % m.group(1))
+    reply(200, json.load(open(f)))
+
+m = re.fullmatch(r"/reports/2021-06-30/documents/([^/]+)", path)
+if m:
+    f = os.path.join(STATE, "doc-" + m.group(1) + ".json")
+    if not os.path.exists(f):
+        err(404, "NotFound", "Report document not found: %s" % m.group(1))
+    reply(200, json.load(open(f)))
+
+if path == "/reports/2021-06-30/reports":
+    types, nt = qlist("reportTypes"), q("nextToken")
+    if not types and not nt:
+        err(400, "InvalidInput", "reportTypes or nextToken is required.")
+    d = os.path.join(STATE, "reports")
+    reps = [json.load(open(os.path.join(d, x))) for x in sorted(os.listdir(d))] if os.path.isdir(d) else []
+    reps = [r for r in reps if r["reportType"] in types]
+    st = qlist("processingStatuses")
+    if st:
+        reps = [r for r in reps if r["processingStatus"] in st]
+    reply(200, {"reports": list(reversed(reps))})
+
+if path.startswith("/reports/2021-06-30/schedules"):
+    reply(200, {"reportSchedules": []})
+
+# ---- Listings Items
+m = re.fullmatch(r"/listings/2021-08-01/items/([^/]+)/([^/]+)", path)
+if m:
+    sid, sku = m.group(1), unquote(m.group(2))
+    mk = qlist("marketplaceIds")
+    if not mk:
+        err(400, "InvalidInput", "marketplaceIds is required.")
+    for x in mk:
+        mkt_ok(x)
+    if sid != SELLER:
+        unauthorized()
+    doc = latest("getListingsItem-%s-%s.json" % (sku, mk[0]))
+    if doc is None:
+        err(404, "NOT_FOUND", "SKU \x27%s\x27 not found in marketplace %s" % (sku, mk[0]))
+    inc = qlist("includedData") or ["summaries"]
+    reply(200, {k: v for k, v in doc.items() if k == "sku" or k in inc})
+
+if re.fullmatch(r"/listings/2021-08-01/items/[^/]+", path):
+    err(404, "NotFound", "stub: searchListingsItems has no fixture in this run; read the SKUs from getInventorySummaries or a listings report")
+
+# ---- Fulfillment Inbound v0 reads
+if path == "/fba/inbound/v0/shipments":
+    mk = q("MarketplaceId")
+    if not mk or not q("QueryType"):
+        err(400, "InvalidInput", "MarketplaceId and QueryType are required.")
+    mkt_ok(mk)
+    doc = latest("getShipments-%s.json" % mk) or {"payload": {"ShipmentData": []}}
+    rows = doc["payload"]["ShipmentData"]
+    qt = q("QueryType")
+    if qt == "SHIPMENT":
+        st, ids = qlist("ShipmentStatusList"), qlist("ShipmentIdList")
+        if not st and not ids:
+            err(400, "InvalidInput", "ShipmentStatusList or ShipmentIdList is required for QueryType SHIPMENT.")
+        rows = [r for r in rows if (not st or r["ShipmentStatus"] in st) and (not ids or r["ShipmentId"] in ids)]
+    elif qt not in ("DATE_RANGE", "NEXT_TOKEN"):
+        err(400, "InvalidInput", "QueryType is SHIPMENT, DATE_RANGE or NEXT_TOKEN.")
+    reply(200, {"payload": {"ShipmentData": rows}})
+
+m = re.fullmatch(r"/fba/inbound/v0/shipments/([^/]+)/items", path)
+if m:
+    if not q("MarketplaceId"):
+        err(400, "InvalidInput", "MarketplaceId is required.")
+    mkt_ok(q("MarketplaceId"))
+    doc = latest("getShipmentItemsByShipmentId-%s.json" % m.group(1))
+    if doc is None:
+        err(400, "InvalidInput", "Shipment %s not found." % m.group(1))
+    reply(200, doc)
+
+if path == "/fba/inbound/v0/shipmentItems":
+    if not q("MarketplaceId") or not q("QueryType"):
+        err(400, "InvalidInput", "MarketplaceId and QueryType are required.")
+    items = []
+    for f in sorted(glob.glob(os.path.join(S, "getShipmentItemsByShipmentId-*.json"))):
+        items += json.load(open(f))["payload"]["ItemData"]
+    reply(200, {"payload": {"ItemData": items}})
+
+# ---- Fulfillment Inbound 2024-03-20 reads
+P = "/inbound/fba/2024-03-20/inboundPlans"
+if path == P:
+    doc = latest("listInboundPlans.json") or {"inboundPlans": []}
+    st = q("status")
+    if st:
+        doc = dict(doc, inboundPlans=[p for p in doc["inboundPlans"] if p["status"] == st])
+    reply(200, doc)
+for pat, fname in ((P + r"/([^/]+)", "getInboundPlan-%s.json"), (P + r"/([^/]+)/items", "listInboundPlanItems-%s.json"),
+                   (P + r"/([^/]+)/placementOptions", "listPlacementOptions-%s.json")):
+    m = re.fullmatch(pat, path)
+    if m:
+        doc = latest(fname % m.group(1))
+        if doc is None:
+            err(404, "NotFound", "Inbound plan %s not found." % m.group(1))
+        reply(200, doc)
+m = re.fullmatch(P + r"/([^/]+)/shipments/([^/]+)(/items)?", path)
+if m:
+    doc = latest(("listShipmentItems-%s.json" if m.group(3) else "getShipment-%s.json") % m.group(2))
+    if doc is None:
+        err(404, "NotFound", "Shipment %s not found in plan %s." % (m.group(2), m.group(1)))
+    reply(200, doc)
+if path.startswith("/inbound/fba/2024-03-20/"):
+    err(404, "NotFound", "stub: no fixture for this inbound read")
+
+# ---- Product Fees
+m = re.fullmatch(r"/products/fees/v0/(items|listings)/([^/]+)/feesEstimate", path)
+if m:
+    b = body()
+    req = b.get("FeesEstimateRequest") or {}
+    mk = req.get("MarketplaceId")
+    if not mk or not req.get("PriceToEstimateFees") or not req.get("Identifier"):
+        err(400, "InvalidInput", "FeesEstimateRequest needs MarketplaceId, PriceToEstimateFees and Identifier.")
+    mkt_ok(mk)
+    table = latest("feesEstimate-table.json")
+    country = "US" if mk == "ATVPDKIKX0DER" else "DE"
+    ident = unquote(m.group(2))
+    BY_SKU = {"KW-KETTLE-BLK": "B0STOCK001", "KW-KETTLE-WHT": "B0STOCK002", "KW-TEAPOT-GLS": "B0STOCK003", "KW-TEAPOT-GLS-FBM": "B0STOCK003",
+              "KW-INFUSER-2PK": "B0STOCK004", "KW-CADDY-TIN": "B0STOCK005", "KW-SCALE-DGT": "B0STOCK006", "KW-POUROVER": "B0STOCK007",
+              "KW-MUG-SET4": "B0STOCK008", "KW-FROTHER": "B0STOCK009", "KW-KETTLE-BLK-EU": "B0STOCK001", "KW-INFUSER-EU": "B0STOCK004"}
+    asin = ident if m.group(1) == "items" else BY_SKU.get(ident)
+    row = (table.get(country) or {}).get(asin or "")
+    cur = "USD" if country == "US" else "EUR"
+    lp = ((req["PriceToEstimateFees"].get("ListingPrice") or {}).get("Amount"))
+    ident_doc = {"MarketplaceId": mk, "SellerId": SELLER, "IdType": "ASIN" if m.group(1) == "items" else "SellerSKU", "IdValue": ident,
+                 "IsAmazonFulfilled": bool(req.get("IsAmazonFulfilled")), "PriceToEstimateFees": req["PriceToEstimateFees"],
+                 "SellerInputIdentifier": req.get("Identifier")}
+    if row is None:
+        reply(200, {"payload": {"FeesEstimateResult": {"Status": "ClientError", "FeesEstimateIdentifier": ident_doc,
+                    "Error": {"Type": "Sender", "Code": "InvalidParameterValue", "Message": "There is an client-side error. Please verify your inputs.", "Detail": []}}}})
+    price = float(lp) if lp not in (None, "") else row["price"]
+    referral = round(row["referral"] * price / row["price"], 2)
+    fees = [("ReferralFee", referral)] + ([("FBAFees", row["fba"])] if req.get("IsAmazonFulfilled") else [])
+    money = lambda a: {"CurrencyCode": cur, "Amount": a}
+    reply(200, {"payload": {"FeesEstimateResult": {"Status": "Success", "FeesEstimateIdentifier": ident_doc, "FeesEstimate": {
+        "TimeOfFeesEstimation": "2026-11-10T17:20:44.000Z", "TotalFeesEstimate": money(round(sum(a for _, a in fees), 2)),
+        "FeeDetailList": [{"FeeType": t, "FeeAmount": money(a), "FeePromotion": money(0.0), "FinalFee": money(a)} for t, a in fees]}}}})
+
+# ---- Sales: getOrderMetrics
+if path == "/sales/v1/orderMetrics":
+    mk, interval, gran = q("marketplaceIds"), q("interval"), q("granularity")
+    if not mk or not interval or not gran:
+        err(400, "InvalidInput", "marketplaceIds, interval and granularity are required.")
+    mkt_ok(mk)
+    if mk != "ATVPDKIKX0DER":
+        reply(200, {"payload": []})
+    if gran not in ("Day", "Week", "Month", "Total"):
+        err(400, "InvalidInput", "stub: granularity %s has no fixture; Day, Week, Month and Total do" % gran)
+    if q("sku") and q("asin"):
+        err(400, "InvalidInput", "Either asin or sku may be given, not both.")
+    data = latest("orderMetrics-daily.json")
+    try:
+        a, b_ = interval.split("--")
+        d0, d1 = dt.date.fromisoformat(a[:10]), dt.date.fromisoformat(b_[:10])
+    except ValueError:
+        err(400, "InvalidInput", "interval is start--end in ISO 8601.")
+    off = a[19:] or "Z"
+    first = dt.date.fromisoformat(data["start"])
+    skus = [s for s in data["units"] if (not q("sku") or s == q("sku")) and (not q("asin") or data["asin"][s] == q("asin"))]
+    if q("fulfillmentNetwork") == "MFN":
+        skus = []
+    days, d = [], d0
+    while d < d1:
+        days.append(d)
+        d += dt.timedelta(1)
+    def units(day):
+        i = (day - first).days
+        return [(s, data["units"][s][i]) for s in skus if 0 <= i < len(data["units"][s])]
+    def key(day):
+        return {"Day": day, "Week": day - dt.timedelta((day - d0).days % 7), "Month": day.replace(day=1), "Total": d0}[gran]
+    buckets, order = {}, []
+    for day in days:
+        k = key(day)
+        if k not in buckets:
+            buckets[k] = [0, 0.0, 0]
+            order.append(k)
+        for s, u in units(day):
+            buckets[k][0] += u
+            buckets[k][1] += u * data["price"][s]
+            buckets[k][2] += u and 1
+    res = []
+    for i, k in enumerate(order):
+        e = order[i + 1] if i + 1 < len(order) else d1
+        u, sales, n = buckets[k]
+        res.append({"interval": "%sT00:00:00%s--%sT00:00:00%s" % (k.isoformat(), off, e.isoformat(), off if i + 1 < len(order) else (b_[19:] or off)), "unitCount": u,
+                    "orderItemCount": u, "orderCount": u, "averageUnitPrice": {"amount": "%.2f" % (sales / u if u else 0), "currencyCode": "USD"},
+                    "totalSales": {"amount": "%.2f" % sales, "currencyCode": "USD"}})
+    reply(200, {"payload": res})
+
+# ---- Multi-Channel Fulfillment previews (reads; createOrder and the rest are refused above)
+def fulfillable(sku, mk="ATVPDKIKX0DER"):
+    doc = latest("getInventorySummaries-%s.json" % mk) or {"payload": {"inventorySummaries": []}}
+    for r in doc["payload"]["inventorySummaries"]:
+        if r["sellerSku"] == sku:
+            return r["inventoryDetails"]["fulfillableQuantity"]
+    return None
+
+if path == "/fba/outbound/2020-07-01/fulfillmentOrders/preview":
+    b = body()
+    if not b.get("address") or not b.get("items"):
+        err(400, "InvalidInput", "address and items are required.")
+    mk = b.get("marketplaceId") or "ATVPDKIKX0DER"
+    mkt_ok(mk)
+    fees = latest("mcf-fees.json") or {}
+    unf, ok_items, total_units = [], [], 0
+    for it in b["items"]:
+        have = fulfillable(it.get("sellerSku"), mk)
+        qty = int(it.get("quantity") or 0)
+        total_units += qty
+        if have is None:
+            unf.append({"sellerSku": it.get("sellerSku"), "quantity": qty, "sellerFulfillmentOrderItemId": it.get("sellerFulfillmentOrderItemId"),
+                        "itemUnfulfillableReasons": ["InvalidSKU"]})
+        elif have < qty:
+            unf.append({"sellerSku": it["sellerSku"], "quantity": qty - have, "sellerFulfillmentOrderItemId": it.get("sellerFulfillmentOrderItemId"),
+                        "itemUnfulfillableReasons": ["InventoryUnavailable"]})
+            ok_items.append((it, have))
+        else:
+            ok_items.append((it, qty))
+    speeds = b.get("shippingSpeedCategories") or ["Standard", "Expedited", "Priority"]
+    previews = []
+    for sp in speeds:
+        est = []
+        for it, n in ok_items:
+            f = fees.get(it["sellerSku"], {})
+            for name, amt in f.items():
+                v = amt * (n if "PerUnit" in name else 1) * {"Standard": 1, "Expedited": 1.6, "Priority": 2.3, "ScheduledDelivery": 2.3}.get(sp, 1)
+                est.append({"name": name, "amount": {"currencyCode": "USD", "value": "%.2f" % v}})
+        previews.append({"shippingSpeedCategory": sp, "isFulfillable": not unf, "isCODCapable": False, "marketplaceId": mk,
+                         "estimatedFees": est, "unfulfillablePreviewItems": unf,
+                         "orderUnfulfillableReasons": ["InventoryUnavailable"] if unf else [],
+                         "fulfillmentPreviewShipments": [] if unf else [{"earliestShipDate": "2026-11-11T08:00:00Z", "latestShipDate": "2026-11-11T08:00:00Z",
+                             "fulfillmentPreviewItems": [{"sellerSku": it["sellerSku"], "quantity": n, "sellerFulfillmentOrderItemId": it.get("sellerFulfillmentOrderItemId")} for it, n in ok_items]}]})
+    reply(200, {"payload": {"fulfillmentPreviews": previews}})
+
+if path == "/fulfillment/outbound/2026-07-04/previews":
+    b = body()
+    if not b.get("lineItems") or not b.get("destination"):
+        err(400, "InvalidInput", "lineItems and destination are required.")
+    fees = latest("mcf-fees.json") or {}
+    cons, items, prices = [], [], []
+    for li in b["lineItems"]:
+        sku = ((li.get("product") or {}).get("productIdentifier") or {}).get("amazonSku")
+        qty = int(float((li.get("amount") or {}).get("value") or 0))
+        have = fulfillable(sku)
+        if have is None or have < qty:
+            cons.append({"message": "The requested quantity is not available for fulfillment.", "type": "ValidationError",
+                         "code": "ItemQuantityNotAvailable", "details": [{"type": "amazonSku", "value": str(sku)},
+                                                                           {"type": "availableQuantity", "value": str(have or 0)}]})
+        n = min(qty, have or 0)
+        if n:
+            items.append({"productIdentifier": {"amazonSku": sku}, "amount": {"unit": "EACHES", "value": str(n)}})
+            for name, amt in fees.get(sku, {}).items():
+                prices.append({"type": name.replace("FBA", "MCF"), "value": {"currencyCode": "USD", "amount": "%.2f" % (amt * (n if "PerUnit" in name else 1))}})
+    tot = sum(float(p["value"]["amount"]) for p in prices)
+    reply(200, {"plannedShipments": [{"items": items, "offers": [{"estimatedPrice": {"rollupPrices": prices,
+               "totalPrice": {"currencyCode": "USD", "amount": "%.2f" % tot}}, "fulfillmentConfiguration": {"serviceLevel": {"serviceTier": "STANDARD"}}}]}] if items else [],
+               "constraints": cons})
+
+if path.startswith("/fba/outbound/") or path.startswith("/fulfillment/outbound/"):
+    err(404, "NotFound", "stub: no fixture for this outbound read")
+
+err(404, "NotFound", "stub: no fixture for this path")
+'
+status="$(python3 -I -c "$PY" "$method" "$path" "$origin" "$qfile" "$bodyfile" "$output" "$S" "$T")"
+rc=$?
+rm -f "$bodyfile" "$qfile"
+[ $rc -eq 0 ] && [ -n "$status" ] || { echo "stub cx: internal error" >&2; exit 1; }
+case "$status" in 2??) kind=fresh code=0 ;; *) kind=failed code=1 ;; esac
+if [ $json -eq 1 ]; then
+  printf '{"request_id":"stub","paths":[{"path":"%s","http_status":%s,"outcome":{"kind":"%s"},"file":"%s"}],"cost":[]}\n' "${path%%\?*}" "$status" "$kind" "$output"
+else
+  [ $code -eq 0 ] || echo "the source answered HTTP $status" >&2
+  echo "$output"
+fi
+exit $code

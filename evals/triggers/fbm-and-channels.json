@@ -1,0 +1,82 @@
+[
+  {
+    "query": "I set my FBM quantity to 40 and now the listing shows 25, did Amazon lose 15 units",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I update the seller-fulfilled quantity through the Listings API without wiping the lead time",
+    "should_trigger": true
+  },
+  {
+    "query": "我同一个 ASIN 有 FBA 和 FBM 两个 SKU，亚马逊会先卖哪个",
+    "should_trigger": true
+  },
+  {
+    "query": "send a Multi-Channel Fulfillment order for 30 units to my Shopify customer, what's the fee",
+    "should_trigger": true
+  },
+  {
+    "query": "Seller Central shows 47 in stock but the MCF order says inventory unavailable, why",
+    "should_trigger": true
+  },
+  {
+    "query": "can I use Multi-Location Inventory for my two warehouses in the US",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the difference between fulfillment_availability the attribute and fulfillmentAvailability in getListingsItem",
+    "should_trigger": true
+  },
+  {
+    "query": "vacation mode: will my FBM listings disappear and does it affect FBA",
+    "should_trigger": true
+  },
+  {
+    "query": "do flat-file inventory feeds still work to update FBM quantity, POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA",
+    "should_trigger": true
+  },
+  {
+    "query": "MCF hold order: how long does Amazon reserve the units",
+    "should_trigger": true
+  },
+  {
+    "query": "how many FBA units are in transfer between fulfilment centres",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBA storage fee is too high",
+    "should_trigger": false
+  },
+  {
+    "query": "how many units should I restock at FBA",
+    "should_trigger": false
+  },
+  {
+    "query": "the FBA offer went out of stock, does the ranking drop",
+    "should_trigger": false
+  },
+  {
+    "query": "the inbound shipment is still receiving",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我优化 listing 的关键词",
+    "should_trigger": false
+  },
+  {
+    "query": "my aged FBA inventory, remove or liquidate",
+    "should_trigger": false
+  },
+  {
+    "query": "what's my Buy Box percentage this week",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I set up Sponsored Display retargeting",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBA fee estimate for the teapot",
+    "should_trigger": false
+  }
+]

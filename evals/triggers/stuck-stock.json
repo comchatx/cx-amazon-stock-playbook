@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Seller Central says my tea caddies are stranded, what does that mean and what will Amazon do if I don't fix it",
+    "should_trigger": true
+  },
+  {
+    "query": "unfulfillable customer damaged units: will Amazon reimburse them or dispose of them",
+    "should_trigger": true
+  },
+  {
+    "query": "我有 1000 多个库龄超过 180 天的滤茶器，移除、清算还是降价哪个划算",
+    "should_trigger": true
+  },
+  {
+    "query": "how does FBA Liquidations work and how much do I actually get back",
+    "should_trigger": true
+  },
+  {
+    "query": "Amazon removed my aged inventory without me creating an order, why",
+    "should_trigger": true
+  },
+  {
+    "query": "what does Date-to-take-auto-removal in the stranded inventory report mean",
+    "should_trigger": true
+  },
+  {
+    "query": "can I cancel a removal order after I submit it",
+    "should_trigger": true
+  },
+  {
+    "query": "is my stock over 270 days going to be removed automatically or just charged the surcharge",
+    "should_trigger": true
+  },
+  {
+    "query": "excess inventory: what does estimated-excess-quantity mean and how do I clear it",
+    "should_trigger": true
+  },
+  {
+    "query": "where do I see what Amazon did with my disposed units",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units do I have at Amazon in total",
+    "should_trigger": false
+  },
+  {
+    "query": "my listing is suppressed because of a missing image, fix the image",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the storage fee per cubic foot in October",
+    "should_trigger": false
+  },
+  {
+    "query": "the white kettle ran out, how much demand did I lose",
+    "should_trigger": false
+  },
+  {
+    "query": "how much should I restock for the holidays",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我设置一个 coupon，九折",
+    "should_trigger": false
+  },
+  {
+    "query": "the shipment is RECEIVING with 48 missing",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBM order is pending, should I ship it",
+    "should_trigger": false
+  },
+  {
+    "query": "write a product description for the infuser",
+    "should_trigger": false
+  },
+  {
+    "query": "my ad campaign's CPC doubled",
+    "should_trigger": false
+  }
+]

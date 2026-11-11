@@ -1,0 +1,82 @@
+[
+  {
+    "query": "October storage fee on my infusers looks way higher than September, what rate is Amazon actually charging me",
+    "should_trigger": true
+  },
+  {
+    "query": "what is the storage utilization surcharge and how is my ratio in weeks calculated",
+    "should_trigger": true
+  },
+  {
+    "query": "库龄超过 181 天的 aged inventory surcharge 这个月要扣多少？15 号之前做移除能避免吗",
+    "should_trigger": true
+  },
+  {
+    "query": "what changes for FBA storage fees in February 2027 in the US? is the utilization surcharge going away",
+    "should_trigger": true
+  },
+  {
+    "query": "why does my German storage fee report show PLN and CZK rows for the same SKU",
+    "should_trigger": true
+  },
+  {
+    "query": "I got charged a low-inventory-level fee on a SKU with 500 units inbound, how is that fee calculated",
+    "should_trigger": true
+  },
+  {
+    "query": "how does the FBA capacity limit work and when do I pay the overage fee",
+    "should_trigger": true
+  },
+  {
+    "query": "inbound placement service fee: minimal split vs Amazon-optimized, what does each cost me",
+    "should_trigger": true
+  },
+  {
+    "query": "removal fee 和 disposal fee 现在怎么收费，按件还是按单",
+    "should_trigger": true
+  },
+  {
+    "query": "is liquidation cheaper than paying storage for another six months on slow stock",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units of my black kettle are reserved for customer orders right now",
+    "should_trigger": false
+  },
+  {
+    "query": "what ACOS can I afford on the kettle given referral and FBA fees",
+    "should_trigger": false
+  },
+  {
+    "query": "my referral fee looks wrong on the teapot, which category rate applies",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I create an inbound plan for 400 units through the API",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我算一下这个月的结算报告里退款了多少钱",
+    "should_trigger": false
+  },
+  {
+    "query": "the white kettle was out of stock for two weeks, how much did that cost me in lost sales",
+    "should_trigger": false
+  },
+  {
+    "query": "how should I forecast demand for the holiday season",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBM teapot quantity shows 25 instead of 40",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Sponsored Brands headline for Black Friday",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the monthly subscription fee for a professional seller account",
+    "should_trigger": false
+  }
+]

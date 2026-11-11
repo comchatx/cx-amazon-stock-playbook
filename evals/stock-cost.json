@@ -1,0 +1,40 @@
+{
+  "skill_name": "stock-cost",
+  "evals": [
+    {
+      "id": 21,
+      "name": "storage-rate-2027",
+      "prompt": "October storage on my tea infusers (KW-INFUSER-2PK) looks high. Am I paying the $2.40 per cubic foot everyone quotes for Q4? And what changes for storage fees in 2027?",
+      "expected_output": "Reads GET_FBA_STORAGE_FEE_CHARGES_DATA for October 2026 (month_of_charge 2026-10): the rate applied to the infusers is storage_rate 3.30 per cubic foot = base_rate 2.61 + utilization_surcharge_rate 0.69, with storage_utilization_ratio 31.4 weeks; 1,148 units average, 164.62 cubic feet, estimated fee 543.25 of which est_sus 113.59 (C1, C41). So not 2.40: the rate is read from the row, not carried. The utilization ratio is the seller's, per size class, on 13 weeks of volume stored over volume shipped, not a per-SKU figure (C3). September (the tree's report) applied 0.84 + 0.44. The month's fee is charged in the following month (C1). 2027: the US utilization surcharge ends 2027-01-31 (C4); from 2027-02-01 it is removed and the aged surcharge is folded into one age-based monthly storage rate, flat or lower for stock turning under six months and higher for aged stock (C21); the 2027 rates and bands are in no Amazon text readable without sign-in (C22), so no 2027 rate is given.",
+      "files": [],
+      "expectations": [
+        "The answer reads October 2026's storage fee report (GET_FBA_STORAGE_FEE_CHARGES_DATA, month_of_charge 2026-10, a createReport call in cx-calls.log) and gives the infusers' applied rate: base_rate 2.61 plus utilization_surcharge_rate 0.69, storage_rate 3.30 per cubic foot.",
+        "The answer says the seller is not paying 2.40: the applied rate is the report row's, and it does not present 2.40 (or any other remembered figure) as Amazon's current US rate.",
+        "The answer gives the infusers' October estimate from the report: about 1,148 units on average, about 164.6 cubic feet, about 543 USD, of which about 114 USD is the utilization surcharge (est_sus).",
+        "The answer says the storage utilization ratio (31.4 weeks) is the seller's figure per size class (volume stored over volume shipped), not the infusers' own, so reducing infuser stock alone does not set it.",
+        "The answer does not take September's report in the tree (base 0.84, surcharge 0.44) as October's rate; if it cites September it labels it September.",
+        "The answer says the US storage utilization surcharge ends on 2027-01-31 and that from 2027-02-01 the aged-inventory surcharge is folded into an age-based monthly storage rate (Amazon's letter: flat or lower fees for inventory that turns in under six months, higher for aged inventory).",
+        "The answer gives no 2027 storage rate or age band as Amazon's: it says the 2027 rates are not in any Amazon text it could read (or are behind Seller Central sign-in), and that after 2027-02-01 the applied rate will be on the storage report's rows.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    },
+    {
+      "id": 22,
+      "name": "eu-storage-by-country",
+      "prompt": "德国站：我的 storage fee report 里同一个黑色水壶 (KW-KETTLE-BLK-EU) 有三行，三个不同的费率和币种，这是怎么回事？我的欧洲 utilization surcharge 是多少？还有 2027 年美国那个仓储费改革会不会也影响我德国的库存？",
+      "expected_output": "Reads GET_FBA_STORAGE_FEE_CHARGES_DATA for A1PA6795UKMFR9 through the EU origin, month_of_charge 2026-10. The three rows are three fulfilment centres in three countries: QQD1 Germany 27.40 EUR, QQP1 Poland 104.50 PLN, QQC1 Czech Republic 612.00 CZK per cubic metre (volume_units cubic meters); in Europe storage is billed at the rate and in the currency of the country where the unit physically sits (C34, C33); estimated fees 103.59 EUR, 144.26 PLN, 489.66 CZK. The utilization ratio is 18.6 weeks and utilization_surcharge_rate and est_sus are 0 for October; the ratio is computed once for DE, FR, IT and ES together (C34), and the threshold is a dated value read from the Europe rate card, not carried (C5). The 2027 design (surcharge removed, age-based storage rate) is a US and Canadian change; Amazon announced none for Europe as of 2026-11-10 (C23). Where the units sit is Amazon's placement under Pan-EU (G1).",
+      "files": [],
+      "expectations": [
+        "The answer reads the German store's storage fee report through the EU origin (a createReport for A1PA6795UKMFR9 in cx-calls.log) and says the three rows are the same SKU stored in three countries' fulfilment centres: Germany (27.40 EUR), Poland (104.50 PLN) and the Czech Republic (612.00 CZK), per cubic metre.",
+        "The answer says European storage is billed at the rate and in the currency of the country where the unit physically sits, so the three rates are not an error.",
+        "The answer gives the utilization figures from the report: ratio 18.6 weeks with utilization_surcharge_rate 0 and est_sus 0 for October, i.e. no utilization surcharge was estimated that month.",
+        "The answer says the European utilization ratio is computed once across Germany, France, Italy and Spain (and separately for the UK), not per country or per SKU.",
+        "The answer does not state a European surcharge threshold in weeks as a fact without its source: it either says the threshold is read from Amazon's Europe rate card (naming it), or gives a figure attributed to that card with its edition date.",
+        "The answer says the 2027 change (removal of the utilization surcharge, an age-based monthly storage rate) is announced for the US and Canada only, and that Amazon had announced no such 2027 change for Europe as of the run.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    }
+  ]
+}
