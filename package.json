@@ -1,0 +1,56 @@
+{
+  "name": "@comchatx/cx-replace-me",
+  "version": "0.1.0",
+  "description": "REPLACE: the card's line in English, written by the copy page the guide names.",
+  "license": "MIT",
+  "author": "ComChatX",
+  "homepage": "https://github.com/comchatx/cx-replace-me#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comchatx/cx-replace-me.git"
+  },
+  "bugs": "https://github.com/comchatx/cx-replace-me/issues",
+  "keywords": [
+    "pi-package"
+  ],
+  "type": "module",
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  },
+  "files": [
+    "skills",
+    "README.zh-CN.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "comchatx": {
+    "name": "REPLACE: the name the Plugins page prints",
+    "about": "REPLACE: the card's line in Chinese",
+    "mark": {
+      "line": "REPLACE"
+    },
+    "section": "REPLACE",
+    "order": 0,
+    "skills": {
+      "cx-replace-me": {
+        "about": {
+          "en": "REPLACE: what the skill tells cx, in English",
+          "zh": "REPLACE: what the skill tells cx, in Chinese"
+        }
+      }
+    },
+    "builds": [
+      "REPLACE"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.5.0",
+    "@types/node": "26.2.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}
