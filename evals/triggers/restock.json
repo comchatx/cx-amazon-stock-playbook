@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Restock report says send 420 by Nov 20 but the planning report says 260 by Nov 14, which one do I follow",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units should I reorder if lead time is 25 days production plus 35 days sea",
+    "should_trigger": true
+  },
+  {
+    "query": "补货公式怎么算？安全库存天数一般设多少，领星和赛狐的默认值一样吗",
+    "should_trigger": true
+  },
+  {
+    "query": "how does Amazon compute the recommended replenishment quantity in the Restock Inventory report",
+    "should_trigger": true
+  },
+  {
+    "query": "should I count ordered units or shipped units when computing daily sales for restock",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the difference between days of supply and historical days of supply in the planning report",
+    "should_trigger": true
+  },
+  {
+    "query": "how long after a shipment is delivered does stock become sellable, for my lead time math",
+    "should_trigger": true
+  },
+  {
+    "query": "Chinese New Year factory closure is coming, how much extra should I order before it",
+    "should_trigger": true
+  },
+  {
+    "query": "my restock limit / maximum inventory level, where do I see it and can the API read it",
+    "should_trigger": true
+  },
+  {
+    "query": "safety stock: cycle service level vs fill rate, which should I target for a seasonal SKU",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units do I have at Amazon right now including reserved",
+    "should_trigger": false
+  },
+  {
+    "query": "white kettle was out of stock for two weeks, how did it affect my rank",
+    "should_trigger": false
+  },
+  {
+    "query": "what's my storage fee rate this month",
+    "should_trigger": false
+  },
+  {
+    "query": "create the inbound plan and confirm the cheapest placement option",
+    "should_trigger": false
+  },
+  {
+    "query": "the shipment arrived short by 48 units, should I claim",
+    "should_trigger": false
+  },
+  {
+    "query": "remove the aged infusers before the 15th",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我分析一下广告的 ACOS 为什么上涨了",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBM listing quantity keeps dropping",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a Lightning Deal for Black Friday",
+    "should_trigger": false
+  },
+  {
+    "query": "translate my listing into German for Amazon.de",
+    "should_trigger": false
+  }
+]

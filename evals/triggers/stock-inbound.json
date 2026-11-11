@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Amazon received 552 of the 600 units I sent and the shipment is still RECEIVING, should I file a claim now",
+    "should_trigger": true
+  },
+  {
+    "query": "what do the shipment statuses mean: SHIPPED, IN_TRANSIT, DELIVERED, CHECKED_IN, RECEIVING, CLOSED",
+    "should_trigger": true
+  },
+  {
+    "query": "入库货件已经 CLOSED 了但还少 12 件，是丢了吗？索赔期限是多久",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I read received quantity per SKU for a shipment through the SP-API, the 2024-03-20 API doesn't show it",
+    "should_trigger": true
+  },
+  {
+    "query": "I have an inbound plan with two placement options, one free and one $112, what happens if I confirm the free one",
+    "should_trigger": true
+  },
+  {
+    "query": "will my shipment make it for Black Friday if it arrives at the FC around Nov 20",
+    "should_trigger": true
+  },
+  {
+    "query": "can I change the units in a shipment after transportation is confirmed",
+    "should_trigger": true
+  },
+  {
+    "query": "my non-partnered carrier missed the delivery window, what does that do to the shipment",
+    "should_trigger": true
+  },
+  {
+    "query": "how long does Amazon take to receive a shipment after it's delivered at peak",
+    "should_trigger": true
+  },
+  {
+    "query": "Send to Amazon plan doesn't show up in listInboundPlans, why",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units should I send for Q1",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the storage fee rate on my infusers",
+    "should_trigger": false
+  },
+  {
+    "query": "my FBA SKU shows 0 available but some are in transfer, am I out of stock",
+    "should_trigger": false
+  },
+  {
+    "query": "how many units are stranded and why",
+    "should_trigger": false
+  },
+  {
+    "query": "send a Multi-Channel Fulfillment order for my Shopify customer",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我查一下这个月的广告花费",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I add a new variation to my teapot listing",
+    "should_trigger": false
+  },
+  {
+    "query": "set the FBM quantity to 60",
+    "should_trigger": false
+  },
+  {
+    "query": "my inventory ledger shows negative receipts, what are those",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the referral fee on kitchen products",
+    "should_trigger": false
+  }
+]

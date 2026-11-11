@@ -1,0 +1,82 @@
+[
+  {
+    "query": "how many units of my black kettle do I actually have at Amazon right now? totalQuantity and Seller Central's available don't match",
+    "should_trigger": true
+  },
+  {
+    "query": "getInventorySummaries 里 reserved 有 41 个是 pendingTransshipmentQuantity，这些货买家能买到吗",
+    "should_trigger": true
+  },
+  {
+    "query": "I added up fulfillable for DE, FR, IT and ES and got 4x my stock. Is Pan-EU double counting in the inventory API?",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the difference between inbound working, inbound shipped and inbound receiving in the FBA inventory API",
+    "should_trigger": true
+  },
+  {
+    "query": "MYI report says afn-researching-quantity 6 on one SKU, what is researching and how long does Amazon take",
+    "should_trigger": true
+  },
+  {
+    "query": "我在 AWD 里还有多少货？用 SP-API 怎么查，能和 FBA 的库存加在一起吗",
+    "should_trigger": true
+  },
+  {
+    "query": "the inventory ledger ending balance doesn't tie to getInventorySummaries fulfillable for the same day, which one is right",
+    "should_trigger": true
+  },
+  {
+    "query": "how many of my units are sitting in Poland vs Germany under Pan-European FBA",
+    "should_trigger": true
+  },
+  {
+    "query": "is the planning report or the MYI report fresher for checking stock levels? how often does each refresh",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我盘一下所有 SKU 在亚马逊仓里的库存：可售、预留、在途、不可售分别多少",
+    "should_trigger": true
+  },
+  {
+    "query": "how much is my storage fee per cubic foot this month on the infusers",
+    "should_trigger": false
+  },
+  {
+    "query": "my listing got suppressed for a missing item_package_weight, how do I fix the listing attributes",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我写一个新的 listing 标题和五点描述，产品是玻璃茶壶",
+    "should_trigger": false
+  },
+  {
+    "query": "Sponsored Products campaign stopped spending yesterday, is it out of budget?",
+    "should_trigger": false
+  },
+  {
+    "query": "how many units should I reorder for Q1 given a 60 day lead time",
+    "should_trigger": false
+  },
+  {
+    "query": "my shipment shows RECEIVING for two weeks, when do I file a claim for the missing units",
+    "should_trigger": false
+  },
+  {
+    "query": "what's my profit margin on the kettle after referral and FBA fees",
+    "should_trigger": false
+  },
+  {
+    "query": "give me last month's sales by ASIN from Business Reports",
+    "should_trigger": false
+  },
+  {
+    "query": "我的店铺 account health 有一个 policy violation，怎么申诉",
+    "should_trigger": false
+  },
+  {
+    "query": "set my FBM quantity for the teapot SKU to 60",
+    "should_trigger": false
+  }
+]

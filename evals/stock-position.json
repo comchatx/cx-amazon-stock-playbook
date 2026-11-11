@@ -1,0 +1,39 @@
+{
+  "skill_name": "stock-position",
+  "evals": [
+    {
+      "id": 11,
+      "name": "total-with-awd",
+      "prompt": "我的黑色水壶 KW-KETTLE-BLK：Inventory API 的 totalQuantity 是 592，可 Seller Central 只显示 212 available。我到底一共有多少台？AWD 里那些也算上，给我一个总数。",
+      "expected_output": "Reads getInventorySummaries with details=true for KW-KETTLE-BLK on ATVPDKIKX0DER: totalQuantity 592 = 212 fulfillable + 300 inbound shipped (FBA19KWBLK1, IN_TRANSIT) + 64 reserved + 6 researching + 10 unfulfillable; totalQuantity counts inbound units (W2, W7). Reserved splits into 18 pending customer orders, 41 in FC transfer and 5 in FC processing (W9); whether FC-transfer units can be bought Amazon states two ways, a moderator's 2024 post against the Inventory Buyability page (W10). Researching 6, all aged 1-10 days, with Amazon's limit stated as 30 or 60 days in different texts (W14, W15). Unfulfillable 10: 7 customer damaged, 3 carrier damaged (W16). AWD is not readable with the five roles: GET /awd/2024-05-09/inventory is answered 403 (W38); the AWD figure is in Seller Central's AWD Inventory report (W39), and notes/awd.md holds only the seller's own count of about 900 on 2026-10-01, a dated note, not a read. No total including AWD is presented as read.",
+      "files": [],
+      "expectations": [
+        "The answer says totalQuantity (592) includes the 300 inbound units (in an inbound shipment, not yet at Amazon) and gives the breakdown read with details=true: 212 fulfillable, 300 inbound shipped, 64 reserved, 6 researching, 10 unfulfillable.",
+        "The answer splits the 64 reserved units into 18 pending customer orders, 41 in transfer between fulfilment centres and 5 in FC processing.",
+        "The answer does not state as settled that the 41 FC-transfer units can (or cannot) be bought: it says Amazon states it two ways (a moderator's post saying they are available to buy, the Inventory Buyability page saying reserved units cannot be bought), or it leaves them out of the buyable count while naming that they may be buyable.",
+        "The answer names the 10 unfulfillable units by disposition (7 customer damaged, 3 carrier damaged) and the 6 researching units in the 1-10 day bucket, and does not count either as sellable.",
+        "The answer says AWD stock could not be read through the door: cx-calls.log holds an AWD call answered 403, or the answer says the AWD API needs the Amazon Warehousing and Distribution role, which is not among the application's five roles; and it points the seller to Seller Central's AWD views (the AWD Inventory report or dashboard) for the figure.",
+        "The answer does not present a total that includes AWD units as read from Amazon: if it uses the ~900 from notes/awd.md it labels it the seller's own note of 2026-10-01, not a current read.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    },
+    {
+      "id": 12,
+      "name": "pan-eu-sum",
+      "prompt": "Europe question: getInventorySummaries gives my black kettle KW-KETTLE-BLK-EU 380 fulfillable in DE, 380 in FR, 380 in IT and 380 in ES. So I have 1,520 kettles in Europe? Wie viele stehen tatsächlich in Deutschland?",
+      "expected_output": "Not 1,520: under Pan-European FBA developers report that getInventorySummaries returns the same sum for each participating EU marketplace, so adding the marketplaces multiplies the stock; Amazon's guide does not mention it (W18). fulfillableQuantity is per marketplace, the stock that could be fulfilled there, not stock physically in that country (W6). The reads in Germany's region (origin sellingpartnerapi-eu, A1PA6795UKMFR9) give 380 fulfillable and 29 reserved (7 customer orders, 22 FC transfer). GET_AFN_INVENTORY_DATA_BY_COUNTRY (Europe only, no reserved or inbound figure, W19): DE 241, PL 88, CZ 51 for local fulfilment, 380 in all. Under Pan-EU Amazon moves stock between enabled countries at its discretion (G1), and stock stored in Poland and the Czech Republic creates VAT reporting there (G3).",
+      "files": [],
+      "expectations": [
+        "The answer says the seller does not have 1,520 kettles in Europe: the same Pan-EU stock (380 fulfillable) is reported in each participating marketplace, and the four figures are not to be added.",
+        "The answer attributes the same-sum behaviour to developers' reports (or to its own reading of identical replies in this run), not to a statement in Amazon's FBA Inventory API guide.",
+        "The answer says fulfillableQuantity is the stock that could be fulfilled in the given marketplace, not the stock physically located in that country.",
+        "The answer reads GET_AFN_INVENTORY_DATA_BY_COUNTRY for A1PA6795UKMFR9 through the EU origin and gives the split: 241 in Germany, 88 in Poland, 51 in the Czech Republic (380 in all); and it notes this report carries no reserved or inbound quantity (so the 29 reserved units, 7 customer orders and 22 in transfer, are outside that split).",
+        "The answer says where Pan-EU units sit is Amazon's decision (it moves stock between the countries the seller enabled), so the split can change without the seller acting.",
+        "The answer mentions that stock stored in Poland or the Czech Republic brings VAT reporting obligations there, or does not raise VAT at all; it does not state that storage outside Germany has no tax consequence.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    }
+  ]
+}

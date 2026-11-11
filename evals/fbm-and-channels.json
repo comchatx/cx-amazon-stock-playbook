@@ -1,0 +1,38 @@
+{
+  "skill_name": "fbm-and-channels",
+  "evals": [
+    {
+      "id": 71,
+      "name": "both-offers-quantity",
+      "prompt": "My glass teapot is on FBA (KW-TEAPOT-GLS) and FBM from my NJ warehouse (KW-TEAPOT-GLS-FBM). I set the FBM quantity to 40 on Nov 3, now the listing shows 25. Did Amazon eat 15 units? I just got 35 more in — set the FBM quantity to 60.",
+      "expected_output": "getListingsItem for KW-TEAPOT-GLS-FBM with attributes and fulfillmentAvailability: the attribute fulfillment_availability (DEFAULT) still reads 40, the seller's last submission; the fulfillmentAvailability data set reads 25, the live quantity Amazon calls the source of truth (F1). Amazon decrements a seller-fulfilled quantity when an order is placed and adds back on cancellation (F2), so 15 units were ordered since 11-03, not lost. A quantity change is a patch with op merge on /attributes/fulfillment_availability naming the DEFAULT channel, which leaves lead time and restock date as they were (F4); a replace would submit the whole array. ACCEPTED means taken for processing, and getListingsItem reflects a change in 1-5 minutes (F6). The FBA and FBM offers are two SKUs on one ASIN, two offers that can compete (F19); one SKU carrying both records would draw FBA first (F18). The write is not made: the stand-in refuses it and the answer says so. Whether 60 is right depends on unshipped orders against the shelf count, the seller's fact.",
+      "files": [],
+      "expectations": [
+        "The answer reads the FBM listing with fulfillmentAvailability and attributes and distinguishes the two copies: the fulfillment_availability attribute (40) is the seller's last submission, the fulfillmentAvailability data set (25) is the live quantity Amazon treats as the source of truth.",
+        "The answer explains the 15-unit difference as Amazon decrementing the seller-fulfilled quantity when orders are placed, not as units lost or taken.",
+        "The answer says the quantity write is a Listings Items patch with op merge on /attributes/fulfillment_availability for the DEFAULT channel (or an equivalent that keeps the other fields), not a replace naming only DEFAULT.",
+        "The answer does not claim the quantity is now 60: either cx-calls.log holds no PATCH, or the PATCH appears refused (out_of_scope) and the answer says it did not go through.",
+        "The answer says an accepted write is not proof the quantity landed and that getListingsItem should be read again afterwards (Amazon states 1-5 minutes).",
+        "The answer says the FBA SKU and the FBM SKU are two separate offers on the same ASIN (not one SKU with two channels), and does not claim Amazon draws FBA stock first between two SKUs.",
+        "The answer raises that units in placed but unshipped FBM orders matter to the right number (the shelf count may include them) or leaves the exact figure to the seller; it does not assert 60 is correct.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails."
+      ]
+    },
+    {
+      "id": 72,
+      "name": "mcf-pool",
+      "prompt": "Seller Central shows 47 pour-over drippers (KW-POUROVER) in stock. A Shopify customer wants 30 — send it through Multi-Channel Fulfillment, standard shipping, and tell me the MCF fee.",
+      "expected_output": "getInventorySummaries: 18 fulfillable; the 47 is 18 + 26 in transfer between fulfilment centres + 3 held for customer orders; 500 more are inbound (SHIPPED), not available (F20). MCF draws on the same FBA pool, and units reserved, in transfer or still receiving can be unavailable to an MCF order (F20). Amazon's named check is a preview that creates nothing (v2020-07-01 getFulfillmentPreview or v2026-07-04 getOrderPreview, F22): it answers 12 units unfulfillable (InventoryUnavailable), 18 fillable. The fee is read from the preview, 7.96 USD a unit, 143.28 for 18 (F27). createOrder is a write; the stand-in refuses it. The fill policy is the seller's choice: fill-or-kill (default) fails the order, FILL_ALL waits, FILL_ALL_AVAILABLE ships the 18 (F24). The fee is not quoted from memory.",
+      "files": [],
+      "expectations": [
+        "The answer reads the pour-over's inventory and says only 18 units are fulfillable; the 47 includes 26 units in transfer and 3 held for customer orders, which an MCF order cannot count on.",
+        "The answer runs a fulfilment preview (getFulfillmentPreview or getOrderPreview in cx-calls.log) and reports that 12 of the 30 units cannot be filled now (or that the order of 30 is not fulfillable as asked).",
+        "The answer gives the MCF fee from the preview (7.96 USD a unit; 143.28 USD for 18 units) and does not quote an MCF fee from memory.",
+        "The answer names the seller's options for the shortfall (ship 18 now with FILL_ALL_AVAILABLE, wait for stock, or fail the order under the default fill-or-kill) as the seller's choice.",
+        "The answer does not claim an MCF order was created: cx-calls.log holds no createOrder, or it appears refused (out_of_scope) and the answer says so.",
+        "The answer does not count the 500 inbound units as available for the order.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails."
+      ]
+    }
+  ]
+}

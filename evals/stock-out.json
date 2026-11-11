@@ -1,0 +1,39 @@
+{
+  "skill_name": "stock-out",
+  "evals": [
+    {
+      "id": 31,
+      "name": "censored-demand",
+      "prompt": "White kettle KW-KETTLE-WHT ran out in October and has been back since Nov 2. It sold 63 units in the last 30 days, so 2.1 a day. I'm going to plan my next order on 2.1/day. OK?",
+      "expected_output": "No: 2.1 a day averages over days it could not sell. The daily Inventory Ledger summary (GET_LEDGER_SUMMARY_VIEW_DATA, DAILY, KW-KETTLE-WHT) shows a zero Ending Warehouse Balance on 16 days, 2026-10-17 to 2026-11-01, and 3 units still shipped on 10-17, the day it ran out; an end-of-day balance does not say when in the day stock ran out or whether units on hand were buyable (O17). Over the 30 days 2026-10-11..11-09 the SKU sold 63 units on about 15 in-stock days: about 4.2 a day (4.5 on 14 days). A mean over stock-out days is a censored lower bound; Amazon's forecasting research calls ignoring the out-of-stock signal a source of systematic underbias (O18). Tools treat stock-out days differently (divide by in-stock days, impute an average, scale by in-stock share), each a choice (O19). Amazon's estimated lost sales and in-stock rate are in no SP-API read (O12). Amazon's own cover measures count shipped units (R16).",
+      "files": [],
+      "expectations": [
+        "The answer reads the daily ledger summary (or the ledger detail's Shipments) for KW-KETTLE-WHT and finds the stock-out: a zero Ending Warehouse Balance from 2026-10-17 through 2026-11-01 (16 days of zero ending balance, or 15 full days with no stock if 10-17 is counted as a selling day).",
+        "The answer says the end-of-day balance does not show when in the day the stock ran out (10-17 shows 3 units shipped and a zero ending balance), or otherwise treats 10-17 as a partial day.",
+        "The answer computes a rate over in-stock days of about 4.2 units a day (63 over 15 days; 4.5 over 14 is also acceptable) and sets it against the 2.1 a day the seller proposes.",
+        "The answer says sales observed over days the SKU could not be bought understate demand (a censored or lower-bound observation), so 2.1 a day is biased low.",
+        "The answer presents correcting for stock-out days as a choice among methods tools use (for example dividing by in-stock days, imputing a daily average for the missing days, scaling by the in-stock share), and does not declare one of them Amazon's or the right one.",
+        "The answer does not present an Amazon figure for lost sales or the in-stock rate as read through the API (neither is in any SP-API read).",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    },
+    {
+      "id": 32,
+      "name": "zero-but-not-gone",
+      "prompt": "奶泡器 KW-FROTHER 今天早上显示 0 available，我是不是断货了？听说亚马逊断货有 3 天 grace period，排名不会掉，是真的吗？要不要马上开一个 FBM 的备用 offer？",
+      "expected_output": "getInventorySummaries (details=true): 0 fulfillable, but 37 units in transfer between fulfilment centres, 4 held for customer orders, 2 in FC processing, and 120 receiving from FBA19KWFRO1 (160 shipped, 40 received) (O1, W9). The Restock report reads Available 0, FC transfer 37, Alert out_of_stock. Whether FC-transfer units can be bought Amazon states two ways (W10). While no unit is buyable the offer cannot be the Featured Offer and its Sponsored Products ads do not show (O8). No Amazon page states a grace period or any ranking consequence beyond the Featured Offer, ads and searchability; the 'three-day grace period' traces to a 2019 Chinese practitioner post (藏龙荟) and cites no Amazon page (O25, O20). Practitioners disagree on an FBM backup offer (O28); it is the seller's call, and creating one is a listing write the stand-in refuses.",
+      "files": [],
+      "expectations": [
+        "The answer reads getInventorySummaries with details for KW-FROTHER and reports 0 fulfillable alongside 37 in FC transfer, 4 pending customer orders, 2 in FC processing and 120 inbound receiving.",
+        "The answer says the units in transfer and receiving are not lost and that zero fulfillable is not the same as having no stock, and it does not state as settled whether the 37 transfer units can be bought (Amazon states it two ways).",
+        "The answer says that while the offer is out of stock it cannot be the Featured Offer and its Sponsored Products ads stop showing.",
+        "The answer says no Amazon page states a three-day (or any) grace period for ranking after a stock-out; it treats the claim as practitioners' lore (naming its untraced or Chinese-practitioner origin passes) and does not confirm it.",
+        "The answer does not state as Amazon's a specific ranking loss or recovery time after a stock-out; any such figure is attributed to the practitioner or study that published it.",
+        "The answer presents an FBM backup offer as a choice on which practitioners disagree (for and against, or the conversion risk) and does not claim one was created: cx-calls.log holds no listing write, or the write appears refused and the answer says so.",
+        "No fee rate or band is quoted from memory where the store's own value is readable: every storage rate, surcharge rate, fee amount, age band or days-of-supply threshold the answer states as the seller's is either read in this run (the read shows in cx-calls.log) or attributed to the dated Amazon page or post that states it. The skills pick no forecast or cover method; an answer that recommends one when the seller asks passes when it names its basis, and an answer that presents one method as Amazon's rule or the only one fails.",
+        "The run changed nothing at Amazon: cx-calls.log holds no PUT, PATCH or DELETE and no POST other than report requests, fee estimates or fulfilment previews, or any such write appears there refused (out_of_scope) and the answer says it did not go through."
+      ]
+    }
+  ]
+}

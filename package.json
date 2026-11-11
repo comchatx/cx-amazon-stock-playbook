@@ -1,15 +1,77 @@
 {
-  "name": "@comchatx/cx-replace-me",
+  "name": "@comchatx/cx-amazon-stock-playbook",
   "version": "0.1.0",
-  "description": "REPLACE: the card's line in English, written by the copy page the guide names.",
+  "description": "Shows where your Amazon stock is, and when to restock.",
   "license": "MIT",
   "author": "ComChatX",
-  "homepage": "https://github.com/comchatx/cx-replace-me#readme",
+  "comchatx": {
+    "name": "Amazon Stock Playbook",
+    "about": "看清亚马逊库存都在哪，算出何时补货、补多少。",
+    "mark": {
+      "line": "layers"
+    },
+    "section": "extensions",
+    "order": 55,
+    "skills": {
+      "stock-position": {
+        "zh": "查清库存在哪、处于什么状态、能卖多少。",
+        "en": "Where your stock is, its state, and what can sell now."
+      },
+      "stock-cost": {
+        "zh": "算出仓储、库龄等压库存的费用。",
+        "en": "What holding stock costs: storage, aged stock and more."
+      },
+      "stock-out": {
+        "zh": "分析断货的影响和被低估的需求。",
+        "en": "What a stock-out stops, and the demand it hides."
+      },
+      "restock": {
+        "zh": "读懂补货建议，算出发多少、何时发。",
+        "en": "Amazon's restock advice, and how much to send when."
+      },
+      "stock-inbound": {
+        "zh": "跟踪在途库存，查收货短缺和入库费用。",
+        "en": "Stock on its way: when it sells, shortfalls and fees."
+      },
+      "stuck-stock": {
+        "zh": "找出卡住的库存，以及每条出路的代价。",
+        "en": "Stuck stock, and what each way out costs."
+      },
+      "fbm-and-channels": {
+        "zh": "管理自发货数量、多渠道配送和站外库存。",
+        "en": "Your own-fulfilled quantity, MCF and stock elsewhere."
+      }
+    },
+    "prompts": {
+      "stock-position": {
+        "zh": "盘点亚马逊库存：在哪、能卖多少、哪些卡住了。"
+      },
+      "restock-plan": {
+        "zh": "看看哪些商品该补货，发多少、何时发。"
+      },
+      "stock-cost": {
+        "zh": "算出上个月在亚马逊压库存花了多少钱。"
+      },
+      "stuck-stock": {
+        "zh": "找出滞留、冗余、超龄和不可售的库存及其出路。"
+      },
+      "stockout-review": {
+        "zh": "复盘最近的断货：断了多久、为什么断。"
+      }
+    },
+    "builds": [
+      {
+        "on": "cx-amazon-sp-api",
+        "need": "required"
+      }
+    ]
+  },
+  "homepage": "https://github.com/comchatx/cx-amazon-stock-playbook#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/comchatx/cx-replace-me.git"
+    "url": "git+https://github.com/comchatx/cx-amazon-stock-playbook.git"
   },
-  "bugs": "https://github.com/comchatx/cx-replace-me/issues",
+  "bugs": "https://github.com/comchatx/cx-amazon-stock-playbook/issues",
   "keywords": [
     "pi-package"
   ],
@@ -17,37 +79,22 @@
   "pi": {
     "skills": [
       "./skills"
+    ],
+    "prompts": [
+      "./prompts"
     ]
   },
   "files": [
     "skills",
+    "prompts",
     "README.zh-CN.md"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "comchatx": {
-    "name": "REPLACE: the name the Plugins page prints",
-    "about": "REPLACE: the card's line in Chinese",
-    "mark": {
-      "line": "REPLACE"
-    },
-    "section": "REPLACE",
-    "order": 0,
-    "skills": {
-      "cx-replace-me": {
-        "about": {
-          "en": "REPLACE: what the skill tells cx, in English",
-          "zh": "REPLACE: what the skill tells cx, in Chinese"
-        }
-      }
-    },
-    "builds": [
-      "REPLACE"
-    ]
-  },
   "devDependencies": {
+    "@earendil-works/pi-ai": "1.5.0",
     "@earendil-works/pi-coding-agent": "1.5.0",
     "@types/node": "26.2.0",
     "typescript": "7.0.2",

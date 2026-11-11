@@ -1,0 +1,82 @@
+[
+  {
+    "query": "my frother shows 0 available this morning, am I out of stock even though units are in transfer",
+    "should_trigger": true
+  },
+  {
+    "query": "白色水壶断货了两周，现在回来了，30 天平均销量还能直接用来补货吗",
+    "should_trigger": true
+  },
+  {
+    "query": "is there really a 3 day grace period before Amazon ranking drops when you go out of stock",
+    "should_trigger": true
+  },
+  {
+    "query": "what happens to my Sponsored Products ads and the Featured Offer when the FBA offer runs out",
+    "should_trigger": true
+  },
+  {
+    "query": "how many days was my SKU out of stock last month? can I count it from the inventory ledger",
+    "should_trigger": true
+  },
+  {
+    "query": "should I open an FBM backup offer while my FBA stock is out, or does that hurt the listing",
+    "should_trigger": true
+  },
+  {
+    "query": "does a child variation going out of stock hurt the other sizes' search ranking",
+    "should_trigger": true
+  },
+  {
+    "query": "Amazon's Restock report says Alert out_of_stock but I have 120 units receiving, what does the customer see",
+    "should_trigger": true
+  },
+  {
+    "query": "how much does a stock-out actually cost in rank recovery, is there any real data",
+    "should_trigger": true
+  },
+  {
+    "query": "断货的时候要不要提价，还是直接让它卖断",
+    "should_trigger": true
+  },
+  {
+    "query": "how many units should I send in my next shipment of kettles",
+    "should_trigger": false
+  },
+  {
+    "query": "my storage fee jumped in October, why",
+    "should_trigger": false
+  },
+  {
+    "query": "the listing is suppressed for a missing attribute, how do I fix it",
+    "should_trigger": false
+  },
+  {
+    "query": "how many units are inbound to Amazon on the pour-over",
+    "should_trigger": false
+  },
+  {
+    "query": "my Subscribe & Save discount isn't showing on the detail page",
+    "should_trigger": false
+  },
+  {
+    "query": "设置一下 FBM 的发货时间从 2 天改成 3 天",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I remove 480 aged infusers from FBA",
+    "should_trigger": false
+  },
+  {
+    "query": "competitor took the Buy Box with a lower price, what should I do",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I file a claim for units lost in an inbound shipment",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the best keyword match type for a new campaign",
+    "should_trigger": false
+  }
+]

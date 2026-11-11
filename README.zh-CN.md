@@ -1,23 +1,13 @@
-REPLACE: README.md in Chinese, in the same order.
+cx 读取你放在亚马逊仓库里的库存：每个商品在哪、买家现在能买多少、压着要花多少钱、哪些卡住了，以及什么时候该补货、补多少。AWD 里的库存读不到。除非你开口，cx 不会在亚马逊做任何改动。
 
 你可以这样问：
 
-- REPLACE
-- REPLACE
-- REPLACE
+- 哪些商品撑不到在途的货入仓就会断货？
+- 上个月的仓储费为什么涨了？
+- 上周送到的那批货少收了多少件？
 
-## 连接店铺
+如果想知道每个商品扣掉费用后赚了多少，再装上 cx-amazon-finance-playbook。
 
-REPLACE
+## 用到的数据
 
-## 任务何时运行
-
-REPLACE
-
-## 费用
-
-REPLACE
-
-## 需要
-
-REPLACE
+- **Amazon SP-API**：你的亚马逊卖家账户，在 Amazon SP-API 插件里连接。cx 在这里读取库存、报告和货件。
