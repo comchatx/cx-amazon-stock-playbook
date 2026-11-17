@@ -6,7 +6,7 @@ cx 读取你放在亚马逊仓库里的库存：每个商品在哪、买家现�
 - 上个月的仓储费为什么涨了？
 - 上周送到的那批货少收了多少件？
 
-如果想知道每个商品扣掉费用后赚了多少，再装上 cx-amazon-finance-playbook。
+如果想知道每个商品扣掉费用后赚了多少，再装上[亚马逊财务分析手册](https://www.npmjs.com/package/@comchatx/cx-amazon-finance-playbook)。
 
 ## 用到的数据
 

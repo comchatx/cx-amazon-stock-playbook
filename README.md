@@ -6,7 +6,7 @@ Some things you can ask:
 - Why did my storage charge go up last month?
 - How many units of last week's delivery were received short?
 
-To see what each product earns after fees, also install cx-amazon-finance-playbook.
+To see what each product earns after fees, also install [Amazon Finance Playbook](https://www.npmjs.com/package/@comchatx/cx-amazon-finance-playbook).
 
 ## What it uses
 
