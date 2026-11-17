@@ -10,4 +10,4 @@ To see what each product earns after fees, also install [Amazon Finance Playbook
 
 ## What it uses
 
-- **Amazon SP-API:** your Amazon selling account, connected on the Amazon SP-API plugin. cx reads your inventory, reports and shipments there.
+- **[Amazon SP-API](https://www.npmjs.com/package/cx-amazon-sp-api):** your Amazon selling account, connected on the Amazon SP-API plugin. cx reads your inventory, reports and shipments there.
