@@ -1,11 +1,12 @@
 {
   "name": "@comchatx/cx-amazon-stock-playbook",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shows where your Amazon stock is, and when to restock.",
   "license": "MIT",
   "author": "ComChatX",
   "comchatx": {
     "name": "Amazon Stock Playbook",
+    "nameZh": "亚马逊库存分析手册",
     "about": "看清亚马逊库存都在哪，算出何时补货、补多少。",
     "mark": {
       "line": "layers"
