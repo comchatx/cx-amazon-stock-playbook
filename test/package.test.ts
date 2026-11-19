@@ -65,11 +65,15 @@ it("each template's English description, Chinese words and seller's message are 
   }
 });
 
-it("the Plugins page's field gives every skill its signed words in both languages, and builds on the door alone", () => {
+it("the Plugins page's field gives every skill its signed words in both languages, and builds on the door, and on the finance playbook and the Amazon base where you have them", () => {
   const { comchatx } = field();
   expect(Object.keys(comchatx.skills).sort()).toEqual(Object.keys(SKILL_WORDS).sort());
   for (const [name, words] of Object.entries(SKILL_WORDS)) expect(comchatx.skills[name], name).toEqual(words);
-  expect(comchatx.builds).toEqual([{ on: "cx-amazon-sp-api", need: "required" }]);
+  expect(comchatx.builds).toEqual([
+    { on: "cx-amazon-sp-api", need: "required" },
+    { on: "@comchatx/cx-amazon-finance-playbook", need: "optional", why: { en: "Works out what each product earns after fees.", zh: "用于算出每个商品扣掉费用后赚了多少。" } },
+    { on: "cx-amazon-seller", need: "optional", why: { en: "Tells cx from the start that you sell on Amazon.", zh: "用于让 cx 从第一条消息起就知道你在亚马逊开店。" } },
+  ]);
 });
 
 it("each README is the signed Overview, whole", () => {

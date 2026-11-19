@@ -6,8 +6,6 @@ Some things you can ask:
 - Why did my storage charge go up last month?
 - How many units of last week's delivery were received short?
 
-To see what each product earns after fees, also install [Amazon Finance Playbook](https://www.npmjs.com/package/@comchatx/cx-amazon-finance-playbook).
-
 ## What it uses
 
-- **[Amazon SP-API](https://www.npmjs.com/package/cx-amazon-sp-api):** your Amazon selling account, connected on the Amazon SP-API plugin. cx reads your inventory, reports and shipments there.
+- **Your Amazon seller account:** cx reads your inventory, reports and shipments there.
