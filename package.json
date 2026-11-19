@@ -64,6 +64,10 @@
       {
         "on": "cx-amazon-sp-api",
         "need": "required"
+      },
+      {
+        "on": "cx-amazon-seller",
+        "need": "required"
       }
     ]
   },
