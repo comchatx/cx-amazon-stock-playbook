@@ -69,7 +69,7 @@ it("the Plugins page's field gives every skill its signed words in both language
   const { comchatx } = field();
   expect(Object.keys(comchatx.skills).sort()).toEqual(Object.keys(SKILL_WORDS).sort());
   for (const [name, words] of Object.entries(SKILL_WORDS)) expect(comchatx.skills[name], name).toEqual(words);
-  expect(comchatx.builds).toEqual([{ on: "cx-amazon-sp-api", need: "required" }, { on: "cx-amazon-seller", need: "required" }]);
+  expect(comchatx.builds).toEqual([{ on: "cx-amazon-sp-api", need: "required" }]);
 });
 
 it("each README is the signed Overview, whole", () => {
