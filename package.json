@@ -1,6 +1,6 @@
 {
   "name": "@comchatx/cx-amazon-stock-playbook",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shows where your Amazon stock is, and when to restock.",
   "license": "MIT",
   "author": "ComChatX",
@@ -64,6 +64,22 @@
       {
         "on": "cx-amazon-sp-api",
         "need": "required"
+      },
+      {
+        "on": "@comchatx/cx-amazon-finance-playbook",
+        "need": "optional",
+        "why": {
+          "en": "Works out what each product earns after fees.",
+          "zh": "用于算出每个商品扣掉费用后赚了多少。"
+        }
+      },
+      {
+        "on": "cx-amazon-seller",
+        "need": "optional",
+        "why": {
+          "en": "Tells cx from the start that you sell on Amazon.",
+          "zh": "用于让 cx 从第一条消息起就知道你在亚马逊开店。"
+        }
       }
     ]
   },
