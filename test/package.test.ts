@@ -43,12 +43,13 @@ it("ships its skills, its templates, its README in English and in Chinese and it
   expect(manifest.files).toEqual(["skills", "prompts", "README.zh-CN.md"]);
 });
 
-type Field = { name: string; about: string; skills: Record<string, unknown>; prompts: Record<string, unknown>; builds: unknown };
+type Field = { name: string; nameZh: string; about: string; skills: Record<string, unknown>; prompts: Record<string, unknown>; builds: unknown };
 const field = () => (manifest as unknown as { description: string; comchatx: Field });
 
 it("the card's name and line are the signed ones: comchatx.name, npm's description in English, comchatx.about in Chinese", () => {
   const pkg = field();
   expect(pkg.comchatx.name).toBe(NAME);
+  expect(pkg.comchatx.nameZh).toBe("亚马逊库存分析手册");
   expect(pkg.description).toBe(LINE.en);
   expect(pkg.comchatx.about).toBe(LINE.zh);
 });
