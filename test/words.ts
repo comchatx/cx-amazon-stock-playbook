@@ -12,7 +12,7 @@ export const SKILL_WORDS = {
 } as const;
 export const PROMPT_WORDS = {
   "stock-position": { zh: "盘点亚马逊库存：在哪、能卖多少、哪些卡住了。", en: "See where my Amazon stock is and what shoppers can buy now.", body: "See where my Amazon stock is and what shoppers can buy now." },
-  "restock-plan": { zh: "看看哪些商品该补货，发多少、何时发。", en: "See which products need more stock, and how much to send and when.", body: "Tell me which of my products need more stock: what Amazon recommends, what I already have on its way, and how much you would send and when, with your reasons." },
+  "restock-plan": { zh: "看看哪些商品该补货，发多少、何时发。", en: "See which products need more stock, and how much to send and when.", body: "See which products need more stock, and how much to send and when." },
   "stock-cost": { zh: "算出上个月在亚马逊压库存花了多少钱。", en: "Work out what holding my Amazon stock cost last month.", body: "Work out what holding my Amazon stock cost last month." },
   "stuck-stock": { zh: "找出滞留、冗余、超龄和不可售的库存及其出路。", en: "Find my stuck stock and what each way out costs.", body: "Find my stuck stock and what each way out costs." },
   "stockout-review": { zh: "复盘最近的断货：断了多久、为什么断。", en: "Look back at my recent stock-outs and what they likely cost.", body: "Look back at my recent stock-outs and what they likely cost." },

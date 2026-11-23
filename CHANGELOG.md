@@ -2,7 +2,7 @@
 
 ## 0.1.3
 
-- Four templates' body is their description, word for word, then the seller's own words: `stock-position`, `stock-cost`, `stuck-stock` and `stockout-review`. Typing `/stock-cost` sends "Work out what holding my Amazon stock cost last month."; typing `/stuck-stock SKU-1` sends that template's sentence, then "SKU-1". `restock-plan` keeps its body.
+- Each template's body is its description, word for word, then the seller's own words: `stock-position`, `restock-plan`, `stock-cost`, `stuck-stock` and `stockout-review`. Typing `/stock-cost` sends "Work out what holding my Amazon stock cost last month."; typing `/stuck-stock SKU-1` sends that template's sentence, then "SKU-1".
 
 ## 0.1.2
 
