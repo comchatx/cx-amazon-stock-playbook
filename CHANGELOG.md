@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Each template's body is its description, word for word, then the seller's own words: `stock-position`, `restock-plan`, `stock-cost`, `stuck-stock` and `stockout-review`. Typing `/stock-cost` sends "Work out what holding my Amazon stock cost last month."; typing `/stuck-stock SKU-1` sends that template's sentence, then "SKU-1".
+
 ## 0.1.2
 
 - The README no longer names another plugin; what the playbook builds on is its `comchatx.builds`, each with its reason, as signed on 2026-11-18. The sentence "To see what each product earns after fees, also install [Amazon Finance Playbook](…)." and its Chinese are gone; `@comchatx/cx-amazon-finance-playbook` is an optional entry with the reason 「用于算出每个商品扣掉费用后赚了多少。」 / "Works out what each product earns after fees."

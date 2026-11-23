@@ -24,3 +24,11 @@ it("each template expands in a pi session: its arguments and the seller's own wo
   }
 }, 120_000);
 
+
+it("each template's body is its description word for word, then the seller's own words", () => {
+  for (const name of Object.keys(manifest().comchatx.prompts)) {
+    const text = readFileSync(join(ROOT, "prompts", `${name}.md`), "utf8");
+    const description = /^description: "(.*)"$/m.exec(text)?.[1];
+    expect(text.replace(/^---\n[\s\S]*?\n---\n/, ""), name).toBe(`${description} $@\n`);
+  }
+});

@@ -1,6 +1,6 @@
 {
   "name": "@comchatx/cx-amazon-stock-playbook",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shows where your Amazon stock is, and when to restock.",
   "license": "MIT",
   "author": "ComChatX",
