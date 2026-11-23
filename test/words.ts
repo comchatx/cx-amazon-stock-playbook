@@ -11,11 +11,11 @@ export const SKILL_WORDS = {
   "fbm-and-channels": { zh: "管理自发货数量、多渠道配送和站外库存。", en: "Your own-fulfilled quantity, MCF and stock elsewhere." },
 } as const;
 export const PROMPT_WORDS = {
-  "stock-position": { zh: "盘点亚马逊库存：在哪、能卖多少、哪些卡住了。", en: "See where my Amazon stock is and what shoppers can buy now.", body: "Take stock of my Amazon inventory: where my units are, what shoppers can buy now, what is on its way and what is stuck, and say where each figure comes from." },
+  "stock-position": { zh: "盘点亚马逊库存：在哪、能卖多少、哪些卡住了。", en: "See where my Amazon stock is and what shoppers can buy now.", body: "See where my Amazon stock is and what shoppers can buy now." },
   "restock-plan": { zh: "看看哪些商品该补货，发多少、何时发。", en: "See which products need more stock, and how much to send and when.", body: "Tell me which of my products need more stock: what Amazon recommends, what I already have on its way, and how much you would send and when, with your reasons." },
-  "stock-cost": { zh: "算出上个月在亚马逊压库存花了多少钱。", en: "Work out what holding my Amazon stock cost last month.", body: "Work out what holding my stock at Amazon cost me last month: storage, aged stock, low stock and capacity charges, which products drive them, and where each rate comes from." },
-  "stuck-stock": { zh: "找出滞留、冗余、超龄和不可售的库存及其出路。", en: "Find my stuck stock and what each way out costs.", body: "Find my stuck stock at Amazon: stranded, excess, aged and unsellable units, what each way out costs, and which cannot be undone." },
-  "stockout-review": { zh: "复盘最近的断货：断了多久、为什么断。", en: "Look back at my recent stock-outs and what they likely cost.", body: "Look back at my recent stock-outs: how long each lasted, what sales it likely cost and how you estimated that, and where in the chain it started." },
+  "stock-cost": { zh: "算出上个月在亚马逊压库存花了多少钱。", en: "Work out what holding my Amazon stock cost last month.", body: "Work out what holding my Amazon stock cost last month." },
+  "stuck-stock": { zh: "找出滞留、冗余、超龄和不可售的库存及其出路。", en: "Find my stuck stock and what each way out costs.", body: "Find my stuck stock and what each way out costs." },
+  "stockout-review": { zh: "复盘最近的断货：断了多久、为什么断。", en: "Look back at my recent stock-outs and what they likely cost.", body: "Look back at my recent stock-outs and what they likely cost." },
 } as const;
 /** The signed Overview, each README whole. */
 export const OVERVIEW = {
