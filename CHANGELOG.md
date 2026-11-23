@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- The tile's mark on the Plugins page is the signed drawing.
+
 ## 0.1.3
 
 - Each template's body is its description, word for word, then the seller's own words: `stock-position`, `restock-plan`, `stock-cost`, `stuck-stock` and `stockout-review`. Typing `/stock-cost` sends "Work out what holding my Amazon stock cost last month."; typing `/stuck-stock SKU-1` sends that template's sentence, then "SKU-1".
